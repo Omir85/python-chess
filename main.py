@@ -13,24 +13,6 @@ Chess game
 Board : 8x8 square
 Token : Piece | Pawn
 Piece : Rook | Knight | Bishop | Queen | King
-
-Piece can move, take when moving
-Check when king is attacked
-Checkmate when Check and King has no legal move
-Stalemate when opponent has no legal move
-
-Phase 1: Board is displayed with rows and files
-Phase 2: Pieces are on the board
-Phase 2.5: Implement chess notation to quickload a board
-Phase 3: Pieces can move
-Phase 4: Pieces can take
-Phase 5: Check
-Phase 6: Stalemate
-Phase 7: Checkmate
-Phase 8: Promotion
-Phase 9: En passant
-Phase 10: Implement time
-
 '''
 
 def should_exit(event):
@@ -49,15 +31,15 @@ def start_game(window):
                 print("stopping game")
                 run = False
             else:
+                # TODO handle player move
                 clear_window(window)
                 board.draw(window)
-                # place pieces
                 board.place_pieces(window)
                 redraw_window()
 
 def main():
     window = create_window(WINDOW_WIDTH, WINDOW_HEIGHT, "Chess")
-    # display welcome menu
+    # TODO display welcome menu
     run = True
     while run:
         clear_window(window)

@@ -66,20 +66,6 @@ class ChessBoard(board.Board):
         file = self.get_file(column)
         return self.configuration.get(row + file, " ")
 
-    # def draw_simple(self):
-    #     for row in range(self.rows):
-    #         if row == 0:
-    #             for column in range(self.columns):
-    #                 print(" _", end="")
-    #             print()
-    #         for column in range(self.columns):
-    #             square_content = self.convert(row, column)
-    #             print(f"|{square_content}", end="")
-    #         print("|")
-    #         for column in range(self.columns):
-    #             print("|_", end="")
-    #         print("|")
-
     def get_area(self, row, column):
         return (row * self.square_size, column * self.square_size, (row + 1) * self.square_size, (column + 1) * self.square_size)
 
@@ -147,4 +133,3 @@ class ChessBoard(board.Board):
         font = pygame.font.SysFont("segoeuisymbol", int(self.square_size))
         label = font.render(piece, 1, piece_color)
         window.blit(label, coordinates)
-        # print(piece + " " + player_color)

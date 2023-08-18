@@ -2,7 +2,7 @@
 
 Project created to train on python / pygame to develop a chess game.
 
-Phases of the project (* = Done):
+PROJECT PHASES (* == Done):
 * Phase 1: Board is displayed with rows and files
 * Phase 2: Pieces are on the board
 Phase 2.5: Implement chess notation to quickload a board
@@ -14,3 +14,25 @@ Phase 7: Checkmate
 Phase 8: Promotion
 Phase 9: En passant
 Phase 10: Implement time
+
+RULES SECTION
+
+Overall rules
+- Pieces and pawns can move except if it puts moving player's king in check (Pin)
+- Pieces take when moving
+- Pawns can only take on the 2 forward diagonal squares
+- The king is in check if it would be taken at the next turn
+- The king is in checkmate when it is in check and it has no legal move
+- Stalemate is declared when on player's turn, player has no legal move with any piece
+
+Move rules:
+- Rook can move any number of squares in linear direction (rows and files)
+- Knight can move 2x1 or 1x2
+- Knight can jump over pieces
+- Bishop can move any number of squares in diagonal direction
+- Queen can move any number of squares in any direction
+- King can move 1 square in any direction as long as not in check after
+- Pawns when on starting row can move 2 squares forward, otherwise can move only 1 square forward
+
+Unspoken rule:
+- Kings cannot touch
