@@ -7,6 +7,7 @@ PROJECT PHASES (* == Done):
 * Phase 2: Pieces are on the board
 Phase 2.5: Implement chess notation to quickload a board
 Phase 3: Pieces can move
+Phase 3.5: Castling (short and long)
 Phase 4: Pieces can take
 Phase 5: Check
 Phase 6: Stalemate
@@ -33,6 +34,13 @@ Move rules:
 - Queen can move any number of squares in any direction
 - King can move 1 square in any direction as long as not in check after
 - Pawns when on starting row can move 2 squares forward, otherwise can move only 1 square forward
+
+Castling rules:
+- Apply only for the king
+- If no piece between the king and any of the rooks, the king can move 2 squares in the direction of the rook, and the rook will move towards the center next to the king
+- King must not have already moved
+- Castling rook must not have already moved
+- Castling cannot be performed if any of the squares between the rook and the king are under attack (cannot castle through a check)
 
 Unspoken rule:
 - Kings cannot touch
