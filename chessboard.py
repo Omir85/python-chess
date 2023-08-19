@@ -1,5 +1,5 @@
 import pygame
-from chess import board
+import board
 import colors
 
 class ChessBoard(board.Board):
@@ -102,11 +102,11 @@ class ChessBoard(board.Board):
                     raise Exception(f"Unexpected fen content: {content} in {contents}")
         return fen_configuration
 
-    def get_row(self, column):
-        return str(column + 1)
+    def get_row(self, row):
+        return str(8 - row)
 
-    def get_file(self, line):
-        return chr(8 - line + 96)
+    def get_file(self, column):
+        return chr(column + 97)
 
     def to_square(self, line, column):
         row = self.get_row(line)
