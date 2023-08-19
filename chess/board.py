@@ -5,3 +5,6 @@ class Board():
         self.rows = rows
         self.columns = columns
         self.square_size = square_size
+
+    def __str__(self) -> str:
+        return f"board {self.rows}x{self.columns}"

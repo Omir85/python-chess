@@ -9,6 +9,9 @@ class ChessBoard(board.Board):
     DARK_PLAYER_COLOR = "Dark"
     LIGHT_PLAYER_COLOR = "Light"
 
+    players = [colors.BLACK_COLOR, colors.WHITE_COLOR]
+    player_colors = [DARK_PLAYER_COLOR, LIGHT_PLAYER_COLOR]
+
     DARK_SQUARE = False
     LIGHT_SQUARE = True
 
@@ -38,30 +41,74 @@ class ChessBoard(board.Board):
         PAWN : "♙"
     }
 
-    def __init__(self, square_size, configuration=None) -> None:
+    __STARTING_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+
+    def __init__(self, square_size, fen=None) -> None:
         board.Board.__init__(self, 8, 8, square_size)
-        self.players = [colors.WHITE_COLOR, colors.BLACK_COLOR]
-        if configuration:
-            self.configuration = configuration
+        if not fen:
+            fen = self.__STARTING_FEN
+        self.configuration = self.from_fen(fen)
+
+    def next_square(self, file, row):
+        file += 1
+        if file == 8:
+            file = 0
+            row += 1
+        return file, row
+    
+    def get_fen_piece(self, piece : str):
+        if piece.lower() == "r":
+            return self.ROOK
+        if piece.lower() == "n":
+            return self.KNIGHT
+        if piece.lower() == "b":
+            return self.BISHOP
+        if piece.lower() == "q":
+            return self.QUEEN
+        if piece.lower() == "k":
+            return self.KING
+        if piece.lower() == "p":
+            return self.PAWN
         else:
-            self.configuration = {
-                self.LIGHT_PLAYER_COLOR : {
-                    "a1" : self.ROOK, "a2" : self.KNIGHT, "a3" : self.BISHOP, "a4" : self.QUEEN, "a5" : self.KING, "a6" : self.BISHOP, "a7" : self.KNIGHT, "a8" : self.ROOK,
-                    "b1" : self.PAWN, "b2" : self.PAWN, "b3" : self.PAWN, "b4" : self.PAWN, "b5" : self.PAWN, "b6" : self.PAWN, "b7" : self.PAWN, "b8" : self.PAWN,
-                },
-                "Dark" : {
-                    "g1" : self.PAWN, "g2" : self.PAWN, "g3" : self.PAWN, "g4" : self.PAWN, "g5" : self.PAWN, "g6" : self.PAWN, "g7" : self.PAWN, "g8" : self.PAWN,
-                    "h1" : self.ROOK, "h2" : self.KNIGHT, "h3" : self.BISHOP, "h4" : self.QUEEN, "h5" : self.KING, "h6" : self.BISHOP, "h7" : self.KNIGHT, "h8" : self.ROOK
-                }
-            }
+            raise Exception(f"Unexpected piece : {piece}")
+    
+    def from_fen(self, fen : str):
+        fen_configuration = {
+            self.DARK_PLAYER_COLOR : {},
+            self.LIGHT_PLAYER_COLOR : {}
+        }
+        fens = fen.split(" ")
+        position = fens[0]
+        lines = position.split("/")
+        current_row = 0
+        current_file = 0
+        for i, line in enumerate(lines):
+            contents = [character for character in line]
+            for content in contents:
+                if content.isalnum():
+                    if content.isalpha():
+                        square = self.get_file(current_file) + self.get_row(current_row)
+                        player_color = self.DARK_PLAYER_COLOR if content.islower() else self.LIGHT_PLAYER_COLOR
+                        piece = self.get_fen_piece(content)
+                        if fen_configuration[player_color] == None:
+                            fen_configuration[player_color] = {}
+                        fen_configuration[player_color][square] = piece
+                        current_file, current_row = self.next_square(current_file, current_row)
+                    else:
+                        number_of_empty_squares = int(content)
+                        for _ in range(number_of_empty_squares):
+                            current_file, current_row = self.next_square(current_file, current_row)
+                else:
+                    raise Exception(f"Unexpected fen content: {content} in {contents}")
+        return fen_configuration
 
-    def get_row(self, line):
-        return chr(line + 97)
-
-    def get_file(self, column):
+    def get_row(self, column):
         return str(column + 1)
 
-    def convert(self, line, column):
+    def get_file(self, line):
+        return chr(8 - line + 96)
+
+    def to_square(self, line, column):
         row = self.get_row(line)
         file = self.get_file(column)
         return self.configuration.get(row + file, " ")
@@ -97,12 +144,6 @@ class ChessBoard(board.Board):
                 for position in player_position[1].items():
                     positions.append(position)
         return positions
-    
-    def place_player_pieces(self, window, player_color):
-        positions = self.get_positions(player_color)
-        for square, piece in positions:
-            coordinates = self.get_square_coordinates(square)
-            self.draw_piece(window, self.get_piece(piece, player_color), coordinates, player_color)
 
     def get_piece(self, piece, player_color):
         pieces = self.DARK_PIECES
@@ -111,17 +152,21 @@ class ChessBoard(board.Board):
         return pieces[piece]
     
     def place_pieces(self, window):
-        self.place_player_pieces(window, self.LIGHT_PLAYER_COLOR)
-        self.place_player_pieces(window, self.DARK_PLAYER_COLOR)
+        for player_color in self.player_colors:
+            for square, piece in self.get_positions(player_color):
+                piece_sprite = self.get_piece(piece, player_color)
+                coordinates = self.get_square_coordinates(square)
+                
+                self.draw_piece(window, piece_sprite, coordinates, player_color)
     
     def convert(self, file : str):
         return ord(file) - self.ASCII_FOR_LOWER_CASE_A
     
     def get_square_coordinates(self, square):
-        file = self.convert(square[0])
+        file = 8 - self.convert(square[0]) - 1
         row = int(square[1]) - 1
-
-        return row * self.square_size, file * self.square_size - 20
+        coordinates = file * self.square_size, self.square_size * row - 20
+        return coordinates
 
     def get_piece_color(self, player_color):
         if player_color == self.LIGHT_PLAYER_COLOR:
@@ -133,3 +178,13 @@ class ChessBoard(board.Board):
         font = pygame.font.SysFont("segoeuisymbol", int(self.square_size))
         label = font.render(piece, 1, piece_color)
         window.blit(label, coordinates)
+
+    def __str__(self) -> str:
+        string = ""
+        for key in self.configuration.keys():
+            string += key + ":"
+            values = self.configuration.get(key)
+            for value in values:
+                string += "(" + value + ":" + values.get(value) + ")"
+            string += "\n"
+        return string.strip()
