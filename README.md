@@ -15,6 +15,7 @@ Phase 7: Checkmate
 Phase 8: Promotion
 Phase 9: En passant
 Phase 10: Implement time
+Phase 11: Draw
 
 RULES SECTION
 
@@ -41,6 +42,12 @@ Castling rules:
 - King must not have already moved
 - Castling rook must not have already moved
 - Castling cannot be performed if any of the squares between the rook and the king are under attack (cannot castle through a check)
+
+Draw rules:
+- Repeat moves 3 times
+- Only the kings remain on the board
+-- Extension: Insufficient material
+- No piece captured and no pawn advanced after 50 moves
 
 Unspoken rule:
 - Kings cannot touch
