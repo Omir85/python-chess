@@ -28,13 +28,6 @@ def should_exit(event):
 def is_click(event):
     return event.type == pygame.MOUSEBUTTONUP
 
-def get_clicked_square(board, position):
-    file, row = position
-    f = board.get_file(int(file/board.square_size))
-    r = board.get_row(int(row/board.square_size))
-    clicked_square = f"{f}{r}"
-    return clicked_square
-
 def did_click_on_player_piece(window, square):
     pass
 

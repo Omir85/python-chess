@@ -163,8 +163,8 @@ class ChessBoard(board.Board):
         return ord(file) - self.ASCII_FOR_LOWER_CASE_A
     
     def get_square_coordinates(self, square):
-        file = 8 - self.convert(square[0]) - 1
-        row = int(square[1]) - 1
+        file = self.convert(square[0])
+        row = 8 - int(square[1])
         coordinates = file * self.square_size, self.square_size * row - 20
         return coordinates
 
@@ -178,6 +178,13 @@ class ChessBoard(board.Board):
         font = pygame.font.SysFont("segoeuisymbol", int(self.square_size))
         label = font.render(piece, 1, piece_color)
         window.blit(label, coordinates)
+
+    def get_clicked_square(self, position):
+        file, row = position
+        f = self.get_file(int(file/self.square_size))
+        r = self.get_row(int(row/self.square_size))
+        clicked_square = f"{f}{r}"
+        return clicked_square
 
     def __str__(self) -> str:
         string = ""
