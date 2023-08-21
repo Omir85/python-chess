@@ -6,12 +6,12 @@ class ChessBoard(board.Board):
 
     ASCII_FOR_LOWER_CASE_A = 97
 
-    DARK_PLAYER_COLOR = "Dark"
-    LIGHT_PLAYER_COLOR = "Light"
+    DARK_PLAYER = "Dark"
+    LIGHT_PLAYER = "Light"
 
-    players = [colors.BLACK_COLOR, colors.WHITE_COLOR]
-    player_colors = [DARK_PLAYER_COLOR, LIGHT_PLAYER_COLOR]
-
+    players = [colors.WHITE_COLOR, colors.BLACK_COLOR]
+    player_colors = [DARK_PLAYER, LIGHT_PLAYER]
+    players2 = {LIGHT_PLAYER : colors.WHITE_COLOR, DARK_PLAYER : colors.BLACK_COLOR}
     DARK_SQUARE = False
     LIGHT_SQUARE = True
 
@@ -74,8 +74,8 @@ class ChessBoard(board.Board):
     
     def from_fen(self, fen : str):
         fen_configuration = {
-            self.DARK_PLAYER_COLOR : {},
-            self.LIGHT_PLAYER_COLOR : {}
+            self.DARK_PLAYER : {},
+            self.LIGHT_PLAYER : {}
         }
         fens = fen.split(" ")
         position = fens[0]
@@ -88,7 +88,7 @@ class ChessBoard(board.Board):
                 if content.isalnum():
                     if content.isalpha():
                         square = self.get_file(current_file) + self.get_row(current_row)
-                        player_color = self.DARK_PLAYER_COLOR if content.islower() else self.LIGHT_PLAYER_COLOR
+                        player_color = self.DARK_PLAYER if content.islower() else self.LIGHT_PLAYER
                         piece = self.get_fen_piece(content)
                         if fen_configuration[player_color] == None:
                             fen_configuration[player_color] = {}
@@ -129,11 +129,12 @@ class ChessBoard(board.Board):
             return ChessBoard.DARK_SQUARE
         return ChessBoard.LIGHT_SQUARE
     
-    def draw(self, window):
+    def draw(self, window, legal_moves=[]):
         square = ChessBoard.LIGHT_SQUARE
         for row in range(self.rows):
             for column in range(self.columns):
                 self.draw_square(window, row, column, square)
+                self.highlight_if_legal_move_square(row, column, square)
                 square = self.switch_color(square)
             square = self.switch_color(square)
     
@@ -147,7 +148,7 @@ class ChessBoard(board.Board):
 
     def get_piece(self, piece, player_color):
         pieces = self.DARK_PIECES
-        if player_color == self.LIGHT_PLAYER_COLOR:
+        if player_color == self.LIGHT_PLAYER:
             pieces = self.LIGHT_PIECES
         return pieces[piece]
     
@@ -157,7 +158,7 @@ class ChessBoard(board.Board):
                 piece_sprite = self.get_piece(piece, player_color)
                 coordinates = self.get_square_coordinates(square)
                 
-                self.draw_piece(window, piece_sprite, coordinates, player_color)
+                self.draw_piece(window, piece_sprite, coordinates)
     
     def convert(self, file : str):
         return ord(file) - self.ASCII_FOR_LOWER_CASE_A
@@ -168,15 +169,9 @@ class ChessBoard(board.Board):
         coordinates = file * self.square_size, self.square_size * row - 20
         return coordinates
 
-    def get_piece_color(self, player_color):
-        if player_color == self.LIGHT_PLAYER_COLOR:
-            return colors.YELLOW_COLOR
-        return colors.BROWN_COLOR
-
-    def draw_piece(self, window, piece, coordinates, player_color):
-        piece_color = self.get_piece_color(player_color)
+    def draw_piece(self, window, piece, coordinates):
         font = pygame.font.SysFont("segoeuisymbol", int(self.square_size))
-        label = font.render(piece, 1, piece_color)
+        label = font.render(piece, 1, colors.BLACK_COLOR)
         window.blit(label, coordinates)
 
     def get_clicked_square(self, position):
@@ -185,6 +180,51 @@ class ChessBoard(board.Board):
         r = self.get_row(int(row/self.square_size))
         clicked_square = f"{f}{r}"
         return clicked_square
+    
+    def get_player(self, player):
+        return self.LIGHT_PLAYER if player == colors.WHITE_COLOR else self.DARK_PLAYER
+    
+    def did_click_on_player_piece(self, player, square) -> bool:
+        return self.configuration.get(self.get_player(player)).get(square) is not None
+
+    def get_clicked_player_piece(self, square):
+        for player in self.configuration:
+            positions = self.configuration.get(player)
+            for position in positions:
+                piece = positions.get(position)
+                if position == square:
+                    return piece
+        raise Exception(f"No piece found on {square}")
+
+    def get_pawn_legal_moves(self, square:str):
+        legal_moves = []
+        file = square[0]
+        row = int(square[1])
+        player = self.get_player_from_square(square)
+        is_white_player = player == self.LIGHT_PLAYER
+        is_white_starting_position = row == 2 and is_white_player
+        is_black_starting_position = row == 7 and not is_white_player
+        direction = 1 if is_white_player else -1
+        # TODO handle when pawn is stuck by another piece (own or opponent's)
+        if is_white_starting_position or is_black_starting_position:
+            legal_moves.append(f"{file}{row+2*direction}")
+        legal_moves.append(f"{file}{row+1*direction}")
+        return legal_moves
+
+    def get_player_from_square(self, square):
+        player = None
+        for player in self.configuration:
+            positions = self.configuration.get(player)
+            if square in positions.keys():
+                return player
+        raise Exception(f"square {square} is empty")
+    
+    def get_legal_moves(self, piece, starting_square):
+        legal_moves = []
+        player = self.get_player_from_square(starting_square)
+        if piece == self.PAWN:
+            legal_moves.extend(self.get_pawn_legal_moves(starting_square))
+        return legal_moves
 
     def __str__(self) -> str:
         string = ""
