@@ -91,16 +91,37 @@ class TestChessboard(unittest.TestCase):
         assert len(legal_moves) == 2
         assert "b3" in legal_moves
         assert "b4" in legal_moves
+        # Put a pawn in a non-starting position
+        self.board.configuration["h3"] = "P"
+        legal_moves = self.board.get_pawn_legal_moves("h3")
+        assert len(legal_moves) == 1
+        assert "h4" in legal_moves
+        # Block 2 squares in front of a pawn
         self.board.configuration["a4"] = "p"
         legal_moves = self.board.get_pawn_legal_moves("a2")
         assert len(legal_moves) == 1
         assert "a3" in legal_moves
+        # Add a piece to take for the pawn
+        self.board.configuration["b3"] = "b"
+        legal_moves = self.board.get_pawn_legal_moves("a2")
+        assert len(legal_moves) == 2
+        assert "b3" in legal_moves
+        assert "a3" in legal_moves
+        # Block the square in front of the pawn
         self.board.configuration["a3"] = "p"
         legal_moves = self.board.get_pawn_legal_moves("a2")
+        assert len(legal_moves) == 1
+        assert "b3" in legal_moves
+        # Remove the piece to take for the pawn
+        self.board.configuration["b3"] = None
+        legal_moves = self.board.get_pawn_legal_moves("a2")
         assert len(legal_moves) == 0
-        # self.board.configuration["b3"] = "b"
-        # legal_moves = self.board.get_pawn_legal_moves("a2")
-        # assert len(legal_moves) == 1
+
+    def test_get_pieces_attacked_by(self):
+        self.board.configuration["b3"] = "p"
+        attacked_squares = self.board.get_pieces_attacked_by("a2")
+        assert len(attacked_squares) == 1
+        assert "b3" in attacked_squares
 
     def test_get_player_from_square(self):
         try:

@@ -28,6 +28,18 @@ def should_exit(event):
 def is_click(event):
     return event.type == pygame.MOUSEBUTTONUP
 
+# def highlight_square(window, board:chessboard.ChessBoard, square):
+#     coordinates = board.get_hightlight_square_coordinates(square)
+#     print(coordinates)
+#     pass
+
+def highlight_legal_moves(window, board:chessboard.ChessBoard, legal_moves):
+    for square in legal_moves:
+        coordinates = board.get_hightlight_square_coordinates(square)
+        # print(coordinates)
+        # highlight_square(window, board, square)
+        board.highlight_square(window, coordinates[0] / board.square_size, coordinates[1] / board.square_size)
+
 def hide_legal_moves():
     pass
 
@@ -70,9 +82,9 @@ def start_game(window):
                         if is_legal_move(piece_selected, square):
                             # TODO move the piece if legal move
                             move(window, piece_selected, square)
+                            legal_moves = []
                             # TODO apply taking rules
                             # TODO handle check / checkmate / stalemate
-                            # TODO switch active player if legal move made
                             piece_selected = None
                             square_selected = None
                             current_player = next_player(current_player)
@@ -85,10 +97,11 @@ def start_game(window):
                                 legal_moves = []
                                 piece_selected = None
                                 square_selected = None
-                clear_window(window)
-                board.draw(window, legal_moves)
-                board.place_pieces(window)
-                redraw_window()
+        clear_window(window)
+        board.draw(window, legal_moves)
+        board.place_pieces(window)
+        highlight_legal_moves(window, board, legal_moves)
+        redraw_window()
 
 def main():
     window = create_window(WINDOW_WIDTH, WINDOW_HEIGHT, "Chess")

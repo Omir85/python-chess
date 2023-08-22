@@ -9,6 +9,8 @@ class ChessBoard(board.Board):
     DARK_PLAYER = colors.BLACK_COLOR
     LIGHT_PLAYER = colors.WHITE_COLOR
 
+    HIGHLIGHT_COLOR = colors.ORANGE_COLOR
+
     players = [LIGHT_PLAYER, DARK_PLAYER]
     player_colors = [DARK_PLAYER, LIGHT_PLAYER]
     DARK_SQUARE = False
@@ -116,7 +118,7 @@ class ChessBoard(board.Board):
         return chr(column + 97)
 
     def get_area(self, row, column):
-        return (row * self.square_size, column * self.square_size, (row + 1) * self.square_size, (column + 1) * self.square_size)
+        return (row * self.square_size, column * self.square_size, self.square_size, self.square_size)
 
     def get_color(self, square):
         if square == ChessBoard.DARK_SQUARE:
@@ -124,7 +126,10 @@ class ChessBoard(board.Board):
         return colors.WHITE_COLOR
     
     def draw_square(self, window, row, column, square):
-        pygame.draw.rect(window, self.get_color(square), self.get_area(row, column), 0)
+        pygame.draw.rect(window, self.get_color(square), self.get_area(row, column))
+
+    def highlight_square(self, window, row, column):
+        pygame.draw.rect(window, self.HIGHLIGHT_COLOR, self.get_area(row, column), 3)
 
     def switch_color(self, square):
         if square == ChessBoard.LIGHT_SQUARE:
@@ -168,6 +173,12 @@ class ChessBoard(board.Board):
     
     def convert(self, file : str):
         return ord(file) - self.ASCII_FOR_LOWER_CASE_A
+    
+    def get_hightlight_square_coordinates(self, square):
+        file = self.convert(square[0])
+        row = 8 - int(square[1])
+        coordinates = file * self.square_size, self.square_size * row
+        return coordinates
     
     def get_square_coordinates(self, square):
         file = self.convert(square[0])
@@ -215,7 +226,36 @@ class ChessBoard(board.Board):
                 illegal_moves.append(move)
         for move in illegal_moves:
             legal_moves.remove(move)
+        legal_moves.extend(self.get_pieces_attacked_by(square))
+        # TODO handle special cases for king moves
         return legal_moves
+
+    def get_board_coordinates(self, square):
+        column, row = square[:]
+        row = 8 - int(row)
+        column = self.convert(column)
+        return column, row
+
+    def get_pieces_attacked_by(self, square:str) -> [str]:
+        attacked_pieces = []
+        piece = self.get_piece(square)
+        column, row = self.get_board_coordinates(square)
+        attackable_squares = []
+        direction = -1 if piece.isupper() else 1
+        if piece.lower() == "p":
+            attack_directions = [(-1, direction), (1, direction)]
+            attack_range = 1
+        # TODO implement other pieces attack strategy
+        for i in range(attack_range):
+            for attack_direction in attack_directions:
+                attackable_square = (column + attack_direction[0] * (i + 1), row + attack_direction[1] * (i + 1))
+                attackable_squares.append(attackable_square)
+        for attackable_square in attackable_squares:
+            target_square = self.get_file(attackable_square[0]) + self.get_row(attackable_square[1])
+            piece = self.get_piece(target_square)
+            if piece is not None:
+                attacked_pieces.append(target_square)
+        return attacked_pieces
 
     def get_player_from_square(self, square):
         piece = self.get_piece(square)
@@ -225,7 +265,6 @@ class ChessBoard(board.Board):
     
     def get_legal_moves(self, piece, starting_square):
         legal_moves = []
-        # player = self.get_player_from_square(starting_square)
         if piece == self.PAWN:
             legal_moves.extend(self.get_pawn_legal_moves(starting_square))
         return legal_moves
