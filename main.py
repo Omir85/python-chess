@@ -44,6 +44,7 @@ def next_player(player):
 
 def start_game(window):
     global current_player
+    legal_moves = []
     run = True
     board = chessboard.ChessBoard(WINDOW_WIDTH/8)
     piece_selected = None
@@ -61,7 +62,7 @@ def start_game(window):
                     if piece_selected == None:
                         # the player did not have a piece selected
                         if board.did_click_on_player_piece(current_player, square):
-                            piece_selected = board.get_clicked_player_piece(square)
+                            piece_selected = board.get_piece(square)
                             square_selected = square
                             legal_moves = board.get_legal_moves(piece_selected, square)
                     else:

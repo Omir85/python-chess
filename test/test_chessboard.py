@@ -33,7 +33,7 @@ class TestChessboard(unittest.TestCase):
         assert "h8" == self.board.get_clicked_square((700,0))
     
     def test_str(self):
-        assert f"{self.board}" == "Dark:(a8:R)(b8:N)(c8:B)(d8:Q)(e8:K)(f8:B)(g8:N)(h8:R)(a7:p)(b7:p)(c7:p)(d7:p)(e7:p)(f7:p)(g7:p)(h7:p)\nLight:(a2:p)(b2:p)(c2:p)(d2:p)(e2:p)(f2:p)(g2:p)(h2:p)(a1:R)(b1:N)(c1:B)(d1:Q)(e1:K)(f1:B)(g1:N)(h1:R)"
+        assert f"{self.board.configuration}" == "{'a8': 'r', 'b8': 'n', 'c8': 'b', 'd8': 'q', 'e8': 'k', 'f8': 'b', 'g8': 'n', 'h8': 'r', 'a7': 'p', 'b7': 'p', 'c7': 'p', 'd7': 'p', 'e7': 'p', 'f7': 'p', 'g7': 'p', 'h7': 'p', 'a2': 'P', 'b2': 'P', 'c2': 'P', 'd2': 'P', 'e2': 'P', 'f2': 'P', 'g2': 'P', 'h2': 'P', 'a1': 'R', 'b1': 'N', 'c1': 'B', 'd1': 'Q', 'e1': 'K', 'f1': 'B', 'g1': 'N', 'h1': 'R'}"
     
     def test_get_square_coordinates(self):
         square = "a8"
@@ -45,9 +45,9 @@ class TestChessboard(unittest.TestCase):
 
     def test_did_click_on_player_piece(self):
         square = "a1"
-        current_player = colors.WHITE_COLOR
+        current_player = self.board.LIGHT_PLAYER
         assert True == self.board.did_click_on_player_piece(current_player, square)
-        current_player = colors.BLACK_COLOR
+        current_player = self.board.DARK_PLAYER
         assert False == self.board.did_click_on_player_piece(current_player, square)
         square = "h8"
         current_player = colors.WHITE_COLOR
@@ -60,41 +60,47 @@ class TestChessboard(unittest.TestCase):
         current_player = colors.BLACK_COLOR
         assert False == self.board.did_click_on_player_piece(current_player, square)
         
-    def test_get_clicked_player_piece(self):
-        assert self.board.ROOK == self.board.get_clicked_player_piece("a1")
-        assert self.board.KNIGHT == self.board.get_clicked_player_piece("b1")
-        assert self.board.BISHOP == self.board.get_clicked_player_piece("c1")
-        assert self.board.QUEEN == self.board.get_clicked_player_piece("d1")
-        assert self.board.KING == self.board.get_clicked_player_piece("e1")
-        assert self.board.BISHOP == self.board.get_clicked_player_piece("f1")
-        assert self.board.KNIGHT == self.board.get_clicked_player_piece("g1")
-        assert self.board.ROOK == self.board.get_clicked_player_piece("h1")
-        assert self.board.PAWN == self.board.get_clicked_player_piece("a2")
-        assert self.board.PAWN == self.board.get_clicked_player_piece("b2")
-        assert self.board.PAWN == self.board.get_clicked_player_piece("c2")
-        assert self.board.PAWN == self.board.get_clicked_player_piece("d2")
-        assert self.board.PAWN == self.board.get_clicked_player_piece("e2")
-        assert self.board.PAWN == self.board.get_clicked_player_piece("f2")
-        assert self.board.PAWN == self.board.get_clicked_player_piece("g2")
-        assert self.board.PAWN == self.board.get_clicked_player_piece("h2")
+    def test_get_piece(self):
+        assert self.board.ROOK == self.board.get_piece("a1")
+        assert self.board.KNIGHT == self.board.get_piece("b1")
+        assert self.board.BISHOP == self.board.get_piece("c1")
+        assert self.board.QUEEN == self.board.get_piece("d1")
+        assert self.board.KING == self.board.get_piece("e1")
+        assert self.board.BISHOP == self.board.get_piece("f1")
+        assert self.board.KNIGHT == self.board.get_piece("g1")
+        assert self.board.ROOK == self.board.get_piece("h1")
+        assert self.board.PAWN == self.board.get_piece("a2")
+        assert self.board.PAWN == self.board.get_piece("b2")
+        assert self.board.PAWN == self.board.get_piece("c2")
+        assert self.board.PAWN == self.board.get_piece("d2")
+        assert self.board.PAWN == self.board.get_piece("e2")
+        assert self.board.PAWN == self.board.get_piece("f2")
+        assert self.board.PAWN == self.board.get_piece("g2")
+        assert self.board.PAWN == self.board.get_piece("h2")
         try:
-            self.board.get_clicked_player_piece("a3")
+            self.board.get_piece("a3")
         except Exception as e:
             assert "No piece found on a3" == f"{e}"
 
-    def test_get_legal_moves(self):
-        legal_moves = self.board.get_legal_moves("p", "a2")
+    def test_get_pawn_legal_moves(self):
+        legal_moves = self.board.get_pawn_legal_moves("a2")
         assert len(legal_moves) == 2
         assert "a3" in legal_moves
         assert "a4" in legal_moves
-        legal_moves = self.board.get_legal_moves("p", "b2")
+        legal_moves = self.board.get_pawn_legal_moves("b2")
         assert len(legal_moves) == 2
         assert "b3" in legal_moves
         assert "b4" in legal_moves
-        # self.board.configuration.get(self.board.DARK_PLAYER)["a3"] = "p"
-        # legal_moves = self.board.get_legal_moves("p", "a3")
-        # print(legal_moves)
-        # assert len(legal_moves) == 0
+        self.board.configuration["a4"] = "p"
+        legal_moves = self.board.get_pawn_legal_moves("a2")
+        assert len(legal_moves) == 1
+        assert "a3" in legal_moves
+        self.board.configuration["a3"] = "p"
+        legal_moves = self.board.get_pawn_legal_moves("a2")
+        assert len(legal_moves) == 0
+        # self.board.configuration["b3"] = "b"
+        # legal_moves = self.board.get_pawn_legal_moves("a2")
+        # assert len(legal_moves) == 1
 
     def test_get_player_from_square(self):
         try:
@@ -107,6 +113,9 @@ class TestChessboard(unittest.TestCase):
             assert "square a4 is empty" == f"{e}"
         assert self.board.LIGHT_PLAYER == self.board.get_player_from_square("a1")
         assert self.board.DARK_PLAYER == self.board.get_player_from_square("a8")
+
+    # def test_get_position_player(self):
+    #     self.board.get_position_player("a8")
 
     if __name__ == "__main__":
         pass
