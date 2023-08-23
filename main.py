@@ -46,7 +46,8 @@ def hide_legal_moves():
 def is_legal_move(piece, square):
     return True
 
-def move(window, piece, square):
+def move(piece, square):
+
     pass
 
 def next_player(player):
@@ -61,6 +62,7 @@ def start_game(window):
     board = chessboard.ChessBoard(WINDOW_WIDTH/8)
     piece_selected = None
     square_selected = None
+    from_square = None
     while run:
         for event in pygame.event.get():
             if should_exit(event):
@@ -77,11 +79,13 @@ def start_game(window):
                             piece_selected = board.get_piece(square)
                             square_selected = square
                             legal_moves = board.get_legal_moves(piece_selected, square)
+                            from_square = square
                     else:
                         # the player did have a piece selected and now wants to move the piece somewhere else
                         if is_legal_move(piece_selected, square):
                             # TODO move the piece if legal move
-                            move(window, piece_selected, square)
+                            board.move(from_square, square)
+                            from_square = None
                             legal_moves = []
                             # TODO apply taking rules
                             # TODO handle check / checkmate / stalemate

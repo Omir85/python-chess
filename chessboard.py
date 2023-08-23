@@ -57,27 +57,8 @@ class ChessBoard(board.Board):
             row += 1
         return file, row
     
-    def get_fen_piece(self, piece : str):
-        if piece.lower() == "r":
-            return self.ROOK
-        if piece.lower() == "n":
-            return self.KNIGHT
-        if piece.lower() == "b":
-            return self.BISHOP
-        if piece.lower() == "q":
-            return self.QUEEN
-        if piece.lower() == "k":
-            return self.KING
-        if piece.lower() == "p":
-            return self.PAWN
-        else:
-            raise Exception(f"Unexpected piece : {piece}")
-    
     def from_fen(self, fen : str):
-        fen_configuration = {
-            self.DARK_PLAYER : {},
-            self.LIGHT_PLAYER : {}
-        }
+        fen_configuration = {}
         fens = fen.split(" ")
         position = fens[0]
         lines = position.split("/")
@@ -85,30 +66,18 @@ class ChessBoard(board.Board):
         current_file = 0
         for i, line in enumerate(lines):
             contents = [character for character in line]
-            for content in contents:
-                if content.isalnum():
-                    if content.isalpha():
+            for piece in contents:
+                if piece.isalnum():
+                    if piece.isalpha():
                         square = self.get_file(current_file) + self.get_row(current_row)
-                        player_color = self.DARK_PLAYER if content.islower() else self.LIGHT_PLAYER
-                        piece = self.get_fen_piece(content)
-                        if fen_configuration[player_color] == None:
-                            fen_configuration[player_color] = {}
-                        fen_configuration[player_color][square] = piece
+                        fen_configuration[square] = piece
                         current_file, current_row = self.next_square(current_file, current_row)
                     else:
-                        number_of_empty_squares = int(content)
+                        number_of_empty_squares = int(piece)
                         for _ in range(number_of_empty_squares):
                             current_file, current_row = self.next_square(current_file, current_row)
                 else:
-                    raise Exception(f"Unexpected fen content: {content} in {contents}")
-        # print(fen_configuration)
-        # FIXME re-implement from_fen and remove hardcoded initialisation
-        fen_configuration = {
-            'a8' : 'r', 'b8' : 'n', 'c8' : 'b', 'd8' : 'q', 'e8' : 'k', 'f8' : 'b', 'g8' : 'n', 'h8' : 'r', 
-            'a7' : 'p', 'b7' : 'p', 'c7' : 'p', 'd7' : 'p', 'e7' : 'p', 'f7' : 'p', 'g7' : 'p', 'h7' : 'p', 
-            'a2' : 'P', 'b2' : 'P', 'c2' : 'P', 'd2' : 'P', 'e2' : 'P', 'f2' : 'P', 'g2' : 'P', 'h2' : 'P', 
-            'a1' : 'R', 'b1' : 'N', 'c1' : 'B', 'd1' : 'Q', 'e1' : 'K', 'f1' : 'B', 'g1' : 'N', 'h1' : 'R'
-        }
+                    raise Exception(f"Unexpected fen content: {piece} in {contents}")
         return fen_configuration
 
     def get_row(self, row):
@@ -141,7 +110,6 @@ class ChessBoard(board.Board):
         for row in range(self.rows):
             for column in range(self.columns):
                 self.draw_square(window, row, column, square)
-                # self.highlight_if_legal_move_square(row, column, square)
                 square = self.switch_color(square)
             square = self.switch_color(square)
     
@@ -153,7 +121,8 @@ class ChessBoard(board.Board):
     def get_positions(self, player_color):
         positions = []
         for position in self.configuration.items():
-            if self.get_position_player(position[1]) == player_color:
+            piece = position[1]
+            if piece is not None and self.get_position_player(piece) == player_color:
                 positions.append(position)
         return positions
 
@@ -268,6 +237,10 @@ class ChessBoard(board.Board):
         if piece == self.PAWN:
             legal_moves.extend(self.get_pawn_legal_moves(starting_square))
         return legal_moves
+
+    def move(self, from_square, to_square):
+        self.configuration[to_square] = self.configuration.get(from_square)
+        self.configuration[from_square] = None
 
     def __str__(self) -> str:
         return self.configuration

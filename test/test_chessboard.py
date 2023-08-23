@@ -135,8 +135,14 @@ class TestChessboard(unittest.TestCase):
         assert self.board.LIGHT_PLAYER == self.board.get_player_from_square("a1")
         assert self.board.DARK_PLAYER == self.board.get_player_from_square("a8")
 
-    # def test_get_position_player(self):
-    #     self.board.get_position_player("a8")
+    def test_move(self):
+        from_square = "a2"
+        to_square = "a4"
+        assert "P" == self.board.get_piece(from_square)
+        assert None == self.board.get_piece(to_square)
+        self.board.move(from_square, to_square)
+        assert None == self.board.get_piece(from_square)
+        assert "P" == self.board.get_piece(to_square)
 
     if __name__ == "__main__":
         pass
