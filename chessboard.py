@@ -177,24 +177,45 @@ class ChessBoard(board.Board):
     def get_piece(self, square):
         return self.configuration.get(square)
 
+    def get_other_player(self, player):
+        if player == self.players[0]:
+            return self.players[1]
+        return self.players[0]
+    
+    def is_pawn_stuck(self, square:str) -> bool:
+        current_player = self.get_player_from_square(square)
+        next_row = int(square[1]) + self.get_direction(square)
+        forward_square = square[0] + str(next_row)
+        if self.configuration.get(forward_square) is None:
+            return False
+        return self.get_player_from_square(forward_square) == self.get_other_player(current_player)
+
+    def is_light_player(self, square):
+        return self.get_player_from_square(square) == self.LIGHT_PLAYER
+
+    def get_direction(self, square):
+        return 1 if self.is_light_player(square) else -1
+
     def get_pawn_legal_moves(self, square:str):
         legal_moves = []
         file = square[0]
         row = int(square[1])
-        player = self.get_player_from_square(square)
-        is_white_player = player == self.LIGHT_PLAYER
+        is_white_player = self.is_light_player(square)
         is_white_starting_position = row == 2 and is_white_player
         is_black_starting_position = row == 7 and not is_white_player
-        direction = 1 if is_white_player else -1
-        if is_white_starting_position or is_black_starting_position:
-            legal_moves.append(f"{file}{row+2*direction}")
-        legal_moves.append(f"{file}{row+1*direction}")
+        direction = self.get_direction(square)
+        if not self.is_pawn_stuck(square):
+            if is_white_starting_position or is_black_starting_position:
+                legal_moves.append(f"{file}{row+2*direction}")
+            if 0 <= row+1*direction < 8:
+                legal_moves.append(f"{file}{row+1*direction}")
         illegal_moves = []
         for move in legal_moves:
             if self.configuration.get(move) is not None:
                 illegal_moves.append(move)
         for move in illegal_moves:
             legal_moves.remove(move)
+        # FIXME bug here - can take own piece
         legal_moves.extend(self.get_pieces_attacked_by(square))
         # TODO handle special cases for king moves
         return legal_moves
@@ -211,6 +232,7 @@ class ChessBoard(board.Board):
         column, row = self.get_board_coordinates(square)
         attackable_squares = []
         direction = -1 if piece.isupper() else 1
+        current_player = self.get_player_from_square(square)
         if piece.lower() == "p":
             attack_directions = [(-1, direction), (1, direction)]
             attack_range = 1
@@ -223,7 +245,10 @@ class ChessBoard(board.Board):
             target_square = self.get_file(attackable_square[0]) + self.get_row(attackable_square[1])
             piece = self.get_piece(target_square)
             if piece is not None:
-                attacked_pieces.append(target_square)
+                piece_player = self.get_player_from_square(target_square)
+                other_player = self.get_other_player(current_player)
+                if piece_player == other_player:
+                    attacked_pieces.append(target_square)
         return attacked_pieces
 
     def get_player_from_square(self, square):
@@ -232,9 +257,9 @@ class ChessBoard(board.Board):
             raise Exception(f"square {square} is empty")
         return self.LIGHT_PLAYER if piece.isupper() else self.DARK_PLAYER
     
-    def get_legal_moves(self, piece, starting_square):
+    def get_legal_moves(self, piece:str, starting_square):
         legal_moves = []
-        if piece == self.PAWN:
+        if piece.upper() == self.PAWN:
             legal_moves.extend(self.get_pawn_legal_moves(starting_square))
         return legal_moves
 
@@ -244,3 +269,24 @@ class ChessBoard(board.Board):
 
     def __str__(self) -> str:
         return self.configuration
+    
+    def draw_simple(self):
+        for line in range(self.rows):
+            if line == 0:
+                print()
+                for column in range(self.columns):
+                    print(" _", end="")
+                print()
+            for column in range(self.columns):
+                row = self.get_row(line)
+                file = self.get_file(column)
+                square = file + row
+                if self.configuration.get(square) == None:
+                    square_content = " "
+                else:
+                    square_content = self.configuration.get(square)
+                print(f"|{square_content}", end="")
+            print("|")
+            for column in range(self.columns):
+                print("|_", end="")
+            print("|")

@@ -8,7 +8,7 @@ WINDOW_WIDTH = 800
 WINDOW_HEIGHT = 800
 
 players = chessboard.ChessBoard.players
-current_player = starting_player = players[0]
+current_player = players[0]
 
 '''
 Chess game
@@ -28,32 +28,12 @@ def should_exit(event):
 def is_click(event):
     return event.type == pygame.MOUSEBUTTONUP
 
-# def highlight_square(window, board:chessboard.ChessBoard, square):
-#     coordinates = board.get_hightlight_square_coordinates(square)
-#     print(coordinates)
-#     pass
-
-def highlight_legal_moves(window, board:chessboard.ChessBoard, legal_moves):
-    for square in legal_moves:
+def highlight_squares(window, board:chessboard.ChessBoard, squares):
+    for square in squares:
         coordinates = board.get_hightlight_square_coordinates(square)
         # print(coordinates)
         # highlight_square(window, board, square)
         board.highlight_square(window, coordinates[0] / board.square_size, coordinates[1] / board.square_size)
-
-def hide_legal_moves():
-    pass
-
-def is_legal_move(piece, square):
-    return True
-
-def move(piece, square):
-
-    pass
-
-def next_player(player):
-    if player == players[0]:
-        return players[1]
-    return players[0]
 
 def start_game(window):
     global current_player
@@ -73,16 +53,22 @@ def start_game(window):
                 # TODO handle player move
                 if is_click(event):
                     square = board.get_clicked_square(pygame.mouse.get_pos())
+                    highlight_squares(window, board, [square])
                     if piece_selected == None:
                         # the player did not have a piece selected
                         if board.did_click_on_player_piece(current_player, square):
+                            print("player piece")
                             piece_selected = board.get_piece(square)
                             square_selected = square
                             legal_moves = board.get_legal_moves(piece_selected, square)
+                            print(legal_moves)
                             from_square = square
+                        else:
+                            print("not a player piece")
+                            pass
                     else:
                         # the player did have a piece selected and now wants to move the piece somewhere else
-                        if is_legal_move(piece_selected, square):
+                        if square in legal_moves:
                             # TODO move the piece if legal move
                             board.move(from_square, square)
                             from_square = None
@@ -91,7 +77,9 @@ def start_game(window):
                             # TODO handle check / checkmate / stalemate
                             piece_selected = None
                             square_selected = None
-                            current_player = next_player(current_player)
+                            print(current_player)
+                            current_player = board.get_other_player(current_player)
+                            print(current_player)
                         else:
                             # keep piece selected if illegal move
                             pass
@@ -104,7 +92,8 @@ def start_game(window):
         clear_window(window)
         board.draw(window, legal_moves)
         board.place_pieces(window)
-        highlight_legal_moves(window, board, legal_moves)
+        highlight_squares(window, board, legal_moves)
+        
         redraw_window()
 
 def main():

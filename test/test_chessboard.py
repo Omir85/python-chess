@@ -82,7 +82,7 @@ class TestChessboard(unittest.TestCase):
         except Exception as e:
             assert "No piece found on a3" == f"{e}"
 
-    def test_get_pawn_legal_moves(self):
+    def test_get_white_pawn_legal_moves(self):
         legal_moves = self.board.get_pawn_legal_moves("a2")
         assert len(legal_moves) == 2
         assert "a3" in legal_moves
@@ -116,12 +116,43 @@ class TestChessboard(unittest.TestCase):
         self.board.configuration["b3"] = None
         legal_moves = self.board.get_pawn_legal_moves("a2")
         assert len(legal_moves) == 0
+        # Leave only the piece in front of the pawn
+        self.board.configuration["a4"] = None
+        legal_moves = self.board.get_pawn_legal_moves("a2")
+        assert len(legal_moves) == 0
+
+    def test_is_pawn_stuck(self):
+        assert False == self.board.is_pawn_stuck("a2")
+        self.board.configuration["a3"] = "p"
+        assert True == self.board.is_pawn_stuck("a2")
+
+    def test_get_black_pawn_legal_moves(self):
+        legal_moves = self.board.get_pawn_legal_moves("a7")
+        assert len(legal_moves) == 2
+        assert "a6" in legal_moves
+        assert "a5" in legal_moves
+        legal_moves = self.board.get_pawn_legal_moves("e7")
+        assert len(legal_moves) == 2
+        assert "e6" in legal_moves
+        assert "e5" in legal_moves
 
     def test_get_pieces_attacked_by(self):
-        self.board.configuration["b3"] = "p"
+        self.board.move("b7", "b3")
         attacked_squares = self.board.get_pieces_attacked_by("a2")
         assert len(attacked_squares) == 1
         assert "b3" in attacked_squares
+
+        attacked_squares = self.board.get_pieces_attacked_by("h2")
+        assert len(attacked_squares) == 0
+        self.board.move("g2", "g3")
+        attacked_squares = self.board.get_pieces_attacked_by("h2")
+        assert len(attacked_squares) == 0
+        
+        self.board.move("g7", "g3")
+        attacked_squares = self.board.get_pieces_attacked_by("h2")
+        assert len(attacked_squares) == 1
+        attacked_squares = self.board.get_pieces_attacked_by("g3")
+        assert len(attacked_squares) == 2
 
     def test_get_player_from_square(self):
         try:
