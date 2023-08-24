@@ -31,8 +31,6 @@ def is_click(event):
 def highlight_squares(window, board:chessboard.ChessBoard, squares):
     for square in squares:
         coordinates = board.get_hightlight_square_coordinates(square)
-        # print(coordinates)
-        # highlight_square(window, board, square)
         board.highlight_square(window, coordinates[0] / board.square_size, coordinates[1] / board.square_size)
 
 def start_game(window):
@@ -57,14 +55,11 @@ def start_game(window):
                     if piece_selected == None:
                         # the player did not have a piece selected
                         if board.did_click_on_player_piece(current_player, square):
-                            print("player piece")
                             piece_selected = board.get_piece(square)
                             square_selected = square
                             legal_moves = board.get_legal_moves(piece_selected, square)
-                            print(legal_moves)
                             from_square = square
                         else:
-                            print("not a player piece")
                             pass
                     else:
                         # the player did have a piece selected and now wants to move the piece somewhere else
@@ -77,9 +72,7 @@ def start_game(window):
                             # TODO handle check / checkmate / stalemate
                             piece_selected = None
                             square_selected = None
-                            print(current_player)
                             current_player = board.get_other_player(current_player)
-                            print(current_player)
                         else:
                             # keep piece selected if illegal move
                             pass

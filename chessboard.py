@@ -84,7 +84,7 @@ class ChessBoard(board.Board):
         return str(8 - row)
 
     def get_file(self, column):
-        return chr(column + 97)
+        return chr(column + ChessBoard.ASCII_FOR_LOWER_CASE_A)
 
     def get_area(self, row, column):
         return (row * self.square_size, column * self.square_size, self.square_size, self.square_size)
@@ -140,18 +140,20 @@ class ChessBoard(board.Board):
                 
                 self.draw_piece(window, piece_sprite, coordinates)
     
-    def convert(self, file : str):
-        return ord(file) - self.ASCII_FOR_LOWER_CASE_A
+    def convert(self, file : str) -> int:
+        return ord(file) - ChessBoard.ASCII_FOR_LOWER_CASE_A
     
     def get_hightlight_square_coordinates(self, square):
-        file = self.convert(square[0])
-        row = 8 - int(square[1])
+        # file = self.convert(square[0])
+        # row = 8 - int(square[1])
+        file, row = self.from_square(square)
         coordinates = file * self.square_size, self.square_size * row
         return coordinates
     
     def get_square_coordinates(self, square):
-        file = self.convert(square[0])
-        row = 8 - int(square[1])
+        # file = self.convert(square[0])
+        # row = 8 - int(square[1])
+        file, row = self.from_square(square)
         coordinates = file * self.square_size, self.square_size * row - 20
         return coordinates
 
@@ -215,10 +217,59 @@ class ChessBoard(board.Board):
                 illegal_moves.append(move)
         for move in illegal_moves:
             legal_moves.remove(move)
-        # FIXME bug here - can take own piece
         legal_moves.extend(self.get_pieces_attacked_by(square))
-        # TODO handle special cases for king moves
         return legal_moves
+
+    def get_bishop_legal_moves(self, square:str):
+        legal_moves = []
+        direction_x = -1
+        direction_y = 1
+        print(f"square {square}")
+        for _ in range(2):
+            for _ in range(2):
+                direction_x *= -1
+                if direction_x == -1:
+                    direction_y *= -1
+                squares_ahead = self.get_squares_ahead(square, direction_x, direction_y)
+                print(squares_ahead)
+                legal_moves.extend(squares_ahead)
+        return legal_moves
+
+    def from_square(self, square:str):
+        column = self.convert(square[0])
+        line = 8 - int(square[1])
+        return column, line
+    
+    def to_square(self, column, line):
+        file = self.get_file(column)
+        row = self.get_row(line)
+        square = f"{file}{row}"
+        return square
+    
+    def is_on_board(self, square):
+        column, line = self.from_square(square)
+        return 0 <= column < 8 and 0 <= line < 8
+    
+    def get_squares_ahead(self, square, direction_x, direction_y):
+        squares_ahead = []
+        stuck = False
+        column, line = self.from_square(square)
+        while not stuck:
+            column += direction_x
+            line -= direction_y
+            square_ahead = self.to_square(column, line)
+            if self.is_on_board(square_ahead):
+                if self.configuration.get(square_ahead) is None:
+                    squares_ahead.append(square_ahead)
+                else:
+                    squares_ahead_player = self.get_player_from_square(square_ahead)
+                    
+                    if squares_ahead_player is not None and squares_ahead_player != self.get_player_from_square(square):
+                        squares_ahead.append(square_ahead)
+                    stuck = True
+            else:
+                stuck = True
+        return squares_ahead
 
     def get_board_coordinates(self, square):
         column, row = square[:]
@@ -257,10 +308,14 @@ class ChessBoard(board.Board):
             raise Exception(f"square {square} is empty")
         return self.LIGHT_PLAYER if piece.isupper() else self.DARK_PLAYER
     
-    def get_legal_moves(self, piece:str, starting_square):
+    def get_legal_moves(self, piece:str, square):
         legal_moves = []
-        if piece.upper() == self.PAWN:
-            legal_moves.extend(self.get_pawn_legal_moves(starting_square))
+        piece = piece.upper()
+        if piece == self.PAWN:
+            legal_moves.extend(self.get_pawn_legal_moves(square))
+        if piece == self.BISHOP:
+            legal_moves.extend(self.get_bishop_legal_moves(square))
+
         return legal_moves
 
     def move(self, from_square, to_square):

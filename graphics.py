@@ -8,7 +8,6 @@ def draw_text(surface, text, size, color, x, y):
     draw_label(surface, label, (x, y))
 
 def draw_label(surface, label, coordinates):
-    # print(surface)
     surface.blit(label, coordinates)
 
 def clear_window(window, color = colors.BLACK_COLOR):

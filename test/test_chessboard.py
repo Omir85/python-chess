@@ -175,6 +175,67 @@ class TestChessboard(unittest.TestCase):
         assert None == self.board.get_piece(from_square)
         assert "P" == self.board.get_piece(to_square)
 
+    def test_get_bishop_legal_moves(self):
+        legal_moves = self.board.get_bishop_legal_moves("c1")
+        assert len(legal_moves) == 0
+        self.board.move("b2", "b3")
+        legal_moves = self.board.get_bishop_legal_moves("c1")
+        assert len(legal_moves) == 2
+        self.board.move("d2", "d3")
+        legal_moves = self.board.get_bishop_legal_moves("c1")
+        assert len(legal_moves) == 7
+        self.board.move("b3", "b2")
+        legal_moves = self.board.get_bishop_legal_moves("c1")
+        assert len(legal_moves) == 5
+        self.board.move("c1", "b2")
+        legal_moves = self.board.get_bishop_legal_moves("b2")
+        assert len(legal_moves) == 7
+        self.board.move("f7", "f6")
+        legal_moves = self.board.get_bishop_legal_moves("b2")
+        assert len(legal_moves) == 6
+        self.board.move("e7", "e5")
+        legal_moves = self.board.get_bishop_legal_moves("b2")
+        assert len(legal_moves) == 5
+        self.board.move("e5", "e4")
+        legal_moves = self.board.get_bishop_legal_moves("b2")
+        assert len(legal_moves) == 6
+
+    def test_out_of_bounds(self):
+        assert False == self.board.is_on_board("d0")
+
+    def test_get_squares_ahead(self):
+        # Initial Queen's bishop position
+        squares_ahead = self.board.get_squares_ahead("c1", -1, 1)
+        assert len(squares_ahead) == 0
+        squares_ahead = self.board.get_squares_ahead("c1", 1, 1)
+        assert len(squares_ahead) == 0
+        squares_ahead = self.board.get_squares_ahead("c1", 1, -1)
+        assert len(squares_ahead) == 0
+        squares_ahead = self.board.get_squares_ahead("c1", -1, -1)
+        assert len(squares_ahead) == 0
+        # Only white player moves here
+        # b3 then bishop b2
+        self.board.move("b2", "b3")
+        self.board.move("c1", "b2")
+        squares_ahead = self.board.get_squares_ahead("b2", -1, 1)
+        assert len(squares_ahead) == 1
+        squares_ahead = self.board.get_squares_ahead("b2", 1, 1)
+        assert len(squares_ahead) == 5
+        squares_ahead = self.board.get_squares_ahead("b2", 1, -1)
+        assert len(squares_ahead) == 1
+        squares_ahead = self.board.get_squares_ahead("b2", -1, -1)
+        assert len(squares_ahead) == 0
+        # c3
+        self.board.move("c2", "c3")
+        squares_ahead = self.board.get_squares_ahead("b2", -1, 1)
+        assert len(squares_ahead) == 1
+        squares_ahead = self.board.get_squares_ahead("b2", 1, 1)
+        assert len(squares_ahead) == 0
+        squares_ahead = self.board.get_squares_ahead("b2", 1, -1)
+        assert len(squares_ahead) == 1
+        squares_ahead = self.board.get_squares_ahead("b2", -1, -1)
+        assert len(squares_ahead) == 0
+
     if __name__ == "__main__":
         pass
 
