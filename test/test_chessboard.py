@@ -300,7 +300,32 @@ class TestChessboard(unittest.TestCase):
         self.board.move("e1", "e2")
         legal_moves = self.board.get_king_legal_moves("e2")
         assert len(legal_moves) == 4
-        # TODO prevent move that result in a check
+        # Reset the board
+        self.board = chessboard.ChessBoard(100)
+        self.board.move("f2", "f3")
+        legal_moves = self.board.get_king_legal_moves("e1")
+        assert len(legal_moves) == 1
+        # Put dark bishop on a checking square
+        self.board.move("f8", "h4")
+        legal_moves = self.board.get_king_legal_moves("e1")
+        assert len(legal_moves) == 0
+
+    def test_is_in_check(self):
+        assert False == self.board.is_in_check("e1")
+        self.board.move("d2", "d3")
+        self.board.move("f2", "f3")
+        self.board.move("f8", "b4")
+        assert True == self.board.is_in_check("e1")
+        self.board.move("e1", "f2")
+        assert False == self.board.is_in_check("f2")
+
+    def test_is_checkmate(self):
+        assert False == self.board.is_checkmate("e1")
+        self.board.move("d2", "d3")
+        self.board.move("f8", "b4")
+        assert True == self.board.is_checkmate("e1")
+        self.board.move("f2", "f3")
+        assert False == self.board.is_checkmate("e1")
 
     if __name__ == "__main__":
         pass

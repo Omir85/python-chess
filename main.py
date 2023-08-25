@@ -47,7 +47,6 @@ def start_game(window):
                 print("stopping game")
                 run = False
             else:
-                # TODO handle player move
                 if is_click(event):
                     square = board.get_clicked_square(pygame.mouse.get_pos())
                     highlight_squares(window, board, [square])
@@ -66,7 +65,9 @@ def start_game(window):
                             board.move(from_square, square)
                             from_square = None
                             legal_moves = []
-                            # TODO handle check / checkmate / stalemate
+                            # TODO handle check
+                            # TODO handle checkmate
+                            # TODO handle stalemate
                             piece_selected = None
                             square_selected = None
                             current_player = board.get_other_player(current_player)

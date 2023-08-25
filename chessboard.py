@@ -266,21 +266,52 @@ class ChessBoard(board.Board):
         legal_moves.extend(self.get_rook_legal_moves(square))
         return legal_moves
 
+    def is_attacked(self, square:str) -> bool:
+        possible_attackers = []
+        possible_attackers.extend(self.get_squares_ahead(square, -1, -1))
+        possible_attackers.extend(self.get_squares_ahead(square, -1, 0))
+        possible_attackers.extend(self.get_squares_ahead(square, -1, 1))
+        possible_attackers.extend(self.get_squares_ahead(square, 0, -1))
+        possible_attackers.extend(self.get_squares_ahead(square, 0, 1))
+        possible_attackers.extend(self.get_squares_ahead(square, 1, -1))
+        possible_attackers.extend(self.get_squares_ahead(square, 1, 0))
+        possible_attackers.extend(self.get_squares_ahead(square, 1, 1))
+        current_player = self.get_player_from_square(square)
+        attackers = []
+        for possible_attacker in possible_attackers:
+            if self.get_piece(possible_attacker) is not None and self.get_player_from_square(possible_attacker) != current_player:
+                legal_moves = self.get_legal_moves(self.get_piece(possible_attacker), possible_attacker)
+                if square in legal_moves:
+                    attackers.append(possible_attacker)
+        return len(attackers) > 0
+    
     def get_king_legal_moves(self, square:str):
         moves = []
-        moves.extend(self.get_squares_ahead(square, 1, 1, limit=1))
-        moves.extend(self.get_squares_ahead(square, 0, 1, limit=1))
         moves.extend(self.get_squares_ahead(square, -1, 1, limit=1))
-        moves.extend(self.get_squares_ahead(square, 1, 0, limit=1))
-        moves.extend(self.get_squares_ahead(square, 0, 0, limit=1))
         moves.extend(self.get_squares_ahead(square, -1, 0, limit=1))
         moves.extend(self.get_squares_ahead(square, -1, -1, limit=1))
         moves.extend(self.get_squares_ahead(square, 0, -1, limit=1))
-        legal_moves = []
+        moves.extend(self.get_squares_ahead(square, 0, 1, limit=1))
+        moves.extend(self.get_squares_ahead(square, 1, -1, limit=1))
+        moves.extend(self.get_squares_ahead(square, 1, 0, limit=1))
+        moves.extend(self.get_squares_ahead(square, 1, 1, limit=1))
+        possible_moves = []
         for move in moves:
             current_player = self.get_player_from_square(square)
             if self.configuration.get(move) is None or self.get_player_from_square(move) != current_player:
-                legal_moves.append(move)
+                possible_moves.append(move)
+        legal_moves = []
+        initial_king_square = square
+        if len(possible_moves) > 0:
+            last_king_square = possible_moves[len(possible_moves)-1]
+            for possible_move in possible_moves:
+                king_square = possible_move
+                self.move(square, possible_move)
+                square = king_square
+                if self.is_attacked(possible_move):
+                    continue
+                legal_moves.append(possible_move)
+            self.move(last_king_square, initial_king_square)
         return legal_moves
 
     def from_square(self, square:str):
@@ -335,6 +366,14 @@ class ChessBoard(board.Board):
         if piece.lower() == "p":
             attack_directions = [(-1, direction), (1, direction)]
             attack_range = 1
+        if piece.lower() == "k":
+            attack_directions = [
+                (1,  -1), (1,  0), (1,  1),
+                (0,  -1),          (0,  1), 
+                (-1, -1), (-1, 0), (-1, 1)
+            ]
+            attack_range = 1
+
         for i in range(attack_range):
             for attack_direction in attack_directions:
                 attackable_square = (column + attack_direction[0] * (i + 1), row + attack_direction[1] * (i + 1))
@@ -376,6 +415,28 @@ class ChessBoard(board.Board):
         self.configuration[to_square] = self.configuration.get(from_square)
         self.configuration[from_square] = None
 
+    def _is_attacking_piece(self, attacking_player, attacked_square):
+        return attacking_player != self.get_player_from_square(attacked_square)
+
+    def _get_attacking_player(self, king_square):
+        return self.DARK_PLAYER if self.get_position_player(king_square) == self.LIGHT_PLAYER else self.LIGHT_PLAYER
+
+    def is_in_check(self, king_square:str):
+        attacking_player = self._get_attacking_player(king_square)
+        attacking_squares = []
+        for square in self.configuration.keys():
+            if self.configuration.get(square) is not None:
+                if self._is_attacking_piece(attacking_player, square):
+                    attacking_squares.append(square)
+        attacked_squares = []
+        for attacking_square in attacking_squares:
+            attacked_squares.extend(self.get_legal_moves(self.get_piece(attacking_square), attacking_square))
+        return king_square in attacked_squares
+    
+    def is_checkmate(self, king_square:str):
+        king = self.get_piece(king_square)
+        return self.is_in_check(king_square) and len(self.get_legal_moves(king, king_square)) == 0
+    
     def __str__(self) -> str:
         return self.configuration
     
