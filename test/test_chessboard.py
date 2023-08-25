@@ -265,6 +265,43 @@ class TestChessboard(unittest.TestCase):
         legal_moves = self.board.get_knight_legal_moves("b6")
         assert len(legal_moves) == 6
     
+    def test_get_rook_legal_moves(self):
+        legal_moves = self.board.get_rook_legal_moves("a1")
+        assert len(legal_moves) == 0
+        self.board.move("a2", "a3")
+        legal_moves = self.board.get_rook_legal_moves("a1")
+        assert len(legal_moves) == 1
+        self.board.move("a3", "a4")
+        legal_moves = self.board.get_rook_legal_moves("a1")
+        assert len(legal_moves) == 2
+        self.board.move("a1", "a3")
+        legal_moves = self.board.get_rook_legal_moves("a3")
+        assert len(legal_moves) == 9
+        self.board.move("a3", "b3")
+        legal_moves = self.board.get_rook_legal_moves("b3")
+        assert len(legal_moves) == 11
+
+    def test_get_queen_legal_moves(self):
+        legal_moves = self.board.get_queen_legal_moves("d1")
+        assert len(legal_moves) == 0
+        self.board.move("d1", "d3")
+        legal_moves = self.board.get_queen_legal_moves("d3")
+        assert len(legal_moves) == 18
+        self.board.move("d3", "d2")
+        legal_moves = self.board.get_queen_legal_moves("d2")
+        assert len(legal_moves) == 13
+
+    def test_get_king_legal_moves(self):
+        legal_moves = self.board.get_king_legal_moves("e1")
+        assert len(legal_moves) == 0
+        self.board.move("e2", "e4")
+        legal_moves = self.board.get_king_legal_moves("e1")
+        assert len(legal_moves) == 1
+        self.board.move("e1", "e2")
+        legal_moves = self.board.get_king_legal_moves("e2")
+        assert len(legal_moves) == 4
+        # TODO prevent move that result in a check
+
     if __name__ == "__main__":
         pass
 

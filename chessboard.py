@@ -216,18 +216,20 @@ class ChessBoard(board.Board):
         legal_moves.extend(self.get_pieces_attacked_by(square))
         return legal_moves
 
-    def get_bishop_legal_moves(self, square:str):
+    def get_moves(self, square, direction_x, direction_y):
         legal_moves = []
-        direction_x = -1
-        direction_y = 1
         for _ in range(2):
+            direction_x *= -1
             for _ in range(2):
-                direction_x *= -1
-                if direction_x == -1:
-                    direction_y *= -1
+                direction_y *= -1
                 squares_ahead = self.get_squares_ahead(square, direction_x, direction_y)
-                legal_moves.extend(squares_ahead)
+                for square_ahead in squares_ahead:
+                    if square_ahead not in legal_moves:
+                        legal_moves.append(square_ahead)
         return legal_moves
+
+    def get_bishop_legal_moves(self, square:str):
+        return self.get_moves(square, -1, 1)
 
     def get_knight_moves(self, square, file_move, row_move):
         legal_moves = []
@@ -254,6 +256,33 @@ class ChessBoard(board.Board):
                 legal_moves.append(move)
         return legal_moves
 
+    def get_rook_legal_moves(self, square:str):
+        legal_moves = self.get_moves(square, 0, 1)
+        legal_moves.extend(self.get_moves(square, 1, 0))
+        return legal_moves
+
+    def get_queen_legal_moves(self, square:str):
+        legal_moves = self.get_bishop_legal_moves(square)
+        legal_moves.extend(self.get_rook_legal_moves(square))
+        return legal_moves
+
+    def get_king_legal_moves(self, square:str):
+        moves = []
+        moves.extend(self.get_squares_ahead(square, 1, 1, limit=1))
+        moves.extend(self.get_squares_ahead(square, 0, 1, limit=1))
+        moves.extend(self.get_squares_ahead(square, -1, 1, limit=1))
+        moves.extend(self.get_squares_ahead(square, 1, 0, limit=1))
+        moves.extend(self.get_squares_ahead(square, 0, 0, limit=1))
+        moves.extend(self.get_squares_ahead(square, -1, 0, limit=1))
+        moves.extend(self.get_squares_ahead(square, -1, -1, limit=1))
+        moves.extend(self.get_squares_ahead(square, 0, -1, limit=1))
+        legal_moves = []
+        for move in moves:
+            current_player = self.get_player_from_square(square)
+            if self.configuration.get(move) is None or self.get_player_from_square(move) != current_player:
+                legal_moves.append(move)
+        return legal_moves
+
     def from_square(self, square:str):
         column = self.convert(square[0])
         line = 8 - int(square[1])
@@ -268,26 +297,26 @@ class ChessBoard(board.Board):
     def is_on_board(self, square):
         column, line = self.from_square(square)
         return 0 <= column < 8 and 0 <= line < 8
-    
-    def get_squares_ahead(self, square, direction_x, direction_y):
+
+    def get_squares_ahead(self, square, direction_x, direction_y, limit = None):
         squares_ahead = []
         stuck = False
         column, line = self.from_square(square)
-        while not stuck:
+        while True:
             column += direction_x
             line -= direction_y
             square_ahead = self.to_square(column, line)
-            if self.is_on_board(square_ahead):
-                if self.configuration.get(square_ahead) is None:
-                    squares_ahead.append(square_ahead)
-                else:
-                    squares_ahead_player = self.get_player_from_square(square_ahead)
-                    
-                    if squares_ahead_player is not None and squares_ahead_player != self.get_player_from_square(square):
-                        squares_ahead.append(square_ahead)
-                    stuck = True
+            if not self.is_on_board(square_ahead):
+                break
+            if self.configuration.get(square_ahead) is None:
+                squares_ahead.append(square_ahead)
             else:
-                stuck = True
+                squares_ahead_player = self.get_player_from_square(square_ahead)
+                if squares_ahead_player is not None and squares_ahead_player != self.get_player_from_square(square):
+                    squares_ahead.append(square_ahead)
+                break
+            if limit is not None:
+                break
         return squares_ahead
 
     def get_board_coordinates(self, square):
@@ -335,9 +364,12 @@ class ChessBoard(board.Board):
             legal_moves.extend(self.get_bishop_legal_moves(square))
         if piece == self.KNIGHT:
             legal_moves.extend(self.get_knight_legal_moves(square))
-        if piece == self.ROOK or piece == self.QUEEN or piece == self.KING:
-            legal_moves.extend(self.get_bishop_legal_moves(square))
-            legal_moves.extend(self.get_knight_legal_moves(square))
+        if piece == self.ROOK:
+            legal_moves.extend(self.get_rook_legal_moves(square))
+        if piece == self.QUEEN:
+            legal_moves.extend(self.get_queen_legal_moves(square))
+        if piece == self.KING:
+            legal_moves.extend(self.get_king_legal_moves(square))
         return legal_moves
 
     def move(self, from_square, to_square):
