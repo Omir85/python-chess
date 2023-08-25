@@ -224,14 +224,12 @@ class ChessBoard(board.Board):
         legal_moves = []
         direction_x = -1
         direction_y = 1
-        print(f"square {square}")
         for _ in range(2):
             for _ in range(2):
                 direction_x *= -1
                 if direction_x == -1:
                     direction_y *= -1
                 squares_ahead = self.get_squares_ahead(square, direction_x, direction_y)
-                print(squares_ahead)
                 legal_moves.extend(squares_ahead)
         return legal_moves
 
@@ -287,7 +285,6 @@ class ChessBoard(board.Board):
         if piece.lower() == "p":
             attack_directions = [(-1, direction), (1, direction)]
             attack_range = 1
-        # TODO implement other pieces attack strategy
         for i in range(attack_range):
             for attack_direction in attack_directions:
                 attackable_square = (column + attack_direction[0] * (i + 1), row + attack_direction[1] * (i + 1))

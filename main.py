@@ -47,7 +47,6 @@ def start_game(window):
                 print("stopping game")
                 run = False
             else:
-                # TODO handle player side switch
                 # TODO handle player move
                 if is_click(event):
                     square = board.get_clicked_square(pygame.mouse.get_pos())
@@ -64,11 +63,9 @@ def start_game(window):
                     else:
                         # the player did have a piece selected and now wants to move the piece somewhere else
                         if square in legal_moves:
-                            # TODO move the piece if legal move
                             board.move(from_square, square)
                             from_square = None
                             legal_moves = []
-                            # TODO apply taking rules
                             # TODO handle check / checkmate / stalemate
                             piece_selected = None
                             square_selected = None
