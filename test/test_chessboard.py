@@ -50,14 +50,14 @@ class TestChessboard(unittest.TestCase):
         current_player = self.board.DARK_PLAYER
         assert False == self.board.did_click_on_player_piece(current_player, square)
         square = "h8"
-        current_player = colors.WHITE_COLOR
+        current_player = self.board.LIGHT_PLAYER
         assert False == self.board.did_click_on_player_piece(current_player, square)
-        current_player = colors.BLACK_COLOR
+        current_player = self.board.DARK_PLAYER
         assert True == self.board.did_click_on_player_piece(current_player, square)
         square = "e4"
-        current_player = colors.WHITE_COLOR
+        current_player = self.board.LIGHT_PLAYER
         assert False == self.board.did_click_on_player_piece(current_player, square)
-        current_player = colors.BLACK_COLOR
+        current_player = self.board.DARK_PLAYER
         assert False == self.board.did_click_on_player_piece(current_player, square)
         
     def test_get_piece(self):
@@ -326,6 +326,26 @@ class TestChessboard(unittest.TestCase):
         assert True == self.board.is_checkmate("e1")
         self.board.move("f2", "f3")
         assert False == self.board.is_checkmate("e1")
+
+    def test_short_castle(self):
+        self.board.configuration["f1"] = None
+        self.board.configuration["g1"] = None
+        self.board.draw_simple()
+        # legal_moves = self.board.get_legal_moves("K", "e1")
+        # assert len(legal_moves) == 2
+        # # Queen b6
+        # self.board.move("d8", "b6")
+        # legal_moves = self.board.get_legal_moves("K", "e1")
+        # assert len(legal_moves) == 2
+        # # f3
+        # self.board.move("f2", "f3")
+        # legal_moves = self.board.get_legal_moves("K", "e1")
+        # # Not possible to castle through a check
+        # assert len(legal_moves) == 1
+
+    
+    def test_long_castle(self):
+        pass
 
     if __name__ == "__main__":
         pass

@@ -49,6 +49,7 @@ class ChessBoard(board.Board):
         if not fen:
             fen = self.__STARTING_FEN
         self.configuration = self.from_fen(fen)
+        self.current_player = self.LIGHT_PLAYER
 
     def next_square(self, file, row):
         file += 1
@@ -165,9 +166,6 @@ class ChessBoard(board.Board):
         clicked_square = f"{f}{r}"
         return clicked_square
     
-    def get_player(self, player):
-        return self.LIGHT_PLAYER if player == colors.WHITE_COLOR else self.DARK_PLAYER
-    
     def did_click_on_player_piece(self, player, square) -> bool:
         piece = self.configuration.get(square)
         return piece is not None and player == self.get_position_player(piece)
@@ -181,12 +179,11 @@ class ChessBoard(board.Board):
         return self.players[0]
     
     def is_pawn_stuck(self, square:str) -> bool:
-        current_player = self.get_player_from_square(square)
         next_row = int(square[1]) + self.get_direction(square)
         forward_square = square[0] + str(next_row)
         if self.configuration.get(forward_square) is None:
             return False
-        return self.get_player_from_square(forward_square) == self.get_other_player(current_player)
+        return self.get_player_from_square(forward_square) == self.get_other_player(self.current_player)
 
     def is_light_player(self, square):
         return self.get_player_from_square(square) == self.LIGHT_PLAYER
@@ -249,10 +246,9 @@ class ChessBoard(board.Board):
         moves = []
         moves.extend(self.get_knight_moves(square, 2, 1))
         moves.extend(self.get_knight_moves(square, 1, 2))
-        current_player = self.get_player_from_square(square)
         legal_moves = []
         for move in moves:
-            if self.configuration.get(move) is None or self.get_player_from_square(move) != current_player:
+            if self.configuration.get(move) is None or self.get_player_from_square(move) != self.current_player:
                 legal_moves.append(move)
         return legal_moves
 
@@ -276,10 +272,9 @@ class ChessBoard(board.Board):
         possible_attackers.extend(self.get_squares_ahead(square, 1, -1))
         possible_attackers.extend(self.get_squares_ahead(square, 1, 0))
         possible_attackers.extend(self.get_squares_ahead(square, 1, 1))
-        current_player = self.get_player_from_square(square)
         attackers = []
         for possible_attacker in possible_attackers:
-            if self.get_piece(possible_attacker) is not None and self.get_player_from_square(possible_attacker) != current_player:
+            if self.get_piece(possible_attacker) is not None and self.get_player_from_square(possible_attacker) != self.current_player:
                 legal_moves = self.get_legal_moves(self.get_piece(possible_attacker), possible_attacker)
                 if square in legal_moves:
                     attackers.append(possible_attacker)
@@ -297,8 +292,7 @@ class ChessBoard(board.Board):
         moves.extend(self.get_squares_ahead(square, 1, 1, limit=1))
         possible_moves = []
         for move in moves:
-            current_player = self.get_player_from_square(square)
-            if self.configuration.get(move) is None or self.get_player_from_square(move) != current_player:
+            if self.configuration.get(move) is None or self.get_player_from_square(move) != self.current_player:
                 possible_moves.append(move)
         legal_moves = []
         initial_king_square = square
@@ -314,6 +308,20 @@ class ChessBoard(board.Board):
             self.move(last_king_square, initial_king_square)
         return legal_moves
 
+    def get_short_castle_move(self, square):
+        if self.current_player == self.LIGHT_PLAYER:
+            squares_to_check_if_empty = ["f1", "g1"]
+            for square_to_check in squares_to_check_if_empty:
+                if self.configuration.get(square_to_check) != None:
+                    return []
+                if self.is_attacked(square_to_check):
+                    return []
+        return ["g1"]
+    
+    def get_long_castle_move(self, square):
+        legal_moves = []
+        return legal_moves
+    
     def from_square(self, square:str):
         column = self.convert(square[0])
         line = 8 - int(square[1])
@@ -331,7 +339,6 @@ class ChessBoard(board.Board):
 
     def get_squares_ahead(self, square, direction_x, direction_y, limit = None):
         squares_ahead = []
-        stuck = False
         column, line = self.from_square(square)
         while True:
             column += direction_x
@@ -343,7 +350,8 @@ class ChessBoard(board.Board):
                 squares_ahead.append(square_ahead)
             else:
                 squares_ahead_player = self.get_player_from_square(square_ahead)
-                if squares_ahead_player is not None and squares_ahead_player != self.get_player_from_square(square):
+                piece = self.get_piece(square)
+                if squares_ahead_player is not None and (piece is None or squares_ahead_player != self.get_player_from_square(square)):
                     squares_ahead.append(square_ahead)
                 break
             if limit is not None:
@@ -362,7 +370,7 @@ class ChessBoard(board.Board):
         column, row = self.get_board_coordinates(square)
         attackable_squares = []
         direction = -1 if piece.isupper() else 1
-        current_player = self.get_player_from_square(square)
+        attacking_player = self.get_player_from_square(square)
         if piece.lower() == "p":
             attack_directions = [(-1, direction), (1, direction)]
             attack_range = 1
@@ -383,7 +391,7 @@ class ChessBoard(board.Board):
             piece = self.get_piece(target_square)
             if piece is not None:
                 piece_player = self.get_player_from_square(target_square)
-                other_player = self.get_other_player(current_player)
+                other_player = self.get_other_player(attacking_player)
                 if piece_player == other_player:
                     attacked_pieces.append(target_square)
         return attacked_pieces
@@ -409,6 +417,8 @@ class ChessBoard(board.Board):
             legal_moves.extend(self.get_queen_legal_moves(square))
         if piece == self.KING:
             legal_moves.extend(self.get_king_legal_moves(square))
+            legal_moves.extend(self.get_short_castle_move(square))
+            legal_moves.extend(self.get_long_castle_move(square))
         return legal_moves
 
     def move(self, from_square, to_square):
