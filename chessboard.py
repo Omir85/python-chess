@@ -144,15 +144,11 @@ class ChessBoard(board.Board):
         return ord(file) - ChessBoard.ASCII_FOR_LOWER_CASE_A
     
     def get_hightlight_square_coordinates(self, square):
-        # file = self.convert(square[0])
-        # row = 8 - int(square[1])
         file, row = self.from_square(square)
         coordinates = file * self.square_size, self.square_size * row
         return coordinates
     
     def get_square_coordinates(self, square):
-        # file = self.convert(square[0])
-        # row = 8 - int(square[1])
         file, row = self.from_square(square)
         coordinates = file * self.square_size, self.square_size * row - 20
         return coordinates
@@ -231,6 +227,31 @@ class ChessBoard(board.Board):
                     direction_y *= -1
                 squares_ahead = self.get_squares_ahead(square, direction_x, direction_y)
                 legal_moves.extend(squares_ahead)
+        return legal_moves
+
+    def get_knight_moves(self, square, file_move, row_move):
+        legal_moves = []
+        for _ in range(2):
+            for _ in range(2):
+                column, line = self.from_square(square)
+                if 0 <= line + row_move < 8:
+                    target_square = self.to_square(column + file_move, line + row_move)
+                    if self.is_on_board(target_square):
+                        legal_moves.append(target_square)
+                row_move *= -1
+                if row_move > 0:
+                    file_move *= -1
+        return legal_moves
+    
+    def get_knight_legal_moves(self, square:str):
+        moves = []
+        moves.extend(self.get_knight_moves(square, 2, 1))
+        moves.extend(self.get_knight_moves(square, 1, 2))
+        current_player = self.get_player_from_square(square)
+        legal_moves = []
+        for move in moves:
+            if self.configuration.get(move) is None or self.get_player_from_square(move) != current_player:
+                legal_moves.append(move)
         return legal_moves
 
     def from_square(self, square:str):
@@ -312,7 +333,11 @@ class ChessBoard(board.Board):
             legal_moves.extend(self.get_pawn_legal_moves(square))
         if piece == self.BISHOP:
             legal_moves.extend(self.get_bishop_legal_moves(square))
-
+        if piece == self.KNIGHT:
+            legal_moves.extend(self.get_knight_legal_moves(square))
+        if piece == self.ROOK or piece == self.QUEEN or piece == self.KING:
+            legal_moves.extend(self.get_bishop_legal_moves(square))
+            legal_moves.extend(self.get_knight_legal_moves(square))
         return legal_moves
 
     def move(self, from_square, to_square):

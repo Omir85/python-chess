@@ -236,6 +236,35 @@ class TestChessboard(unittest.TestCase):
         squares_ahead = self.board.get_squares_ahead("b2", -1, -1)
         assert len(squares_ahead) == 0
 
+    def test_get_knight_moves(self):
+        moves = self.board.get_knight_moves("b1", 1, 2)
+        assert len(moves) == 2
+        moves = self.board.get_knight_moves("b1", 2, 1)
+        assert len(moves) == 1
+
+    def test_get_knight_legal_moves(self):
+        legal_moves = self.board.get_knight_legal_moves("b1")
+        assert len(legal_moves) == 2
+        self.board.move("b1", "c3")
+        legal_moves = self.board.get_knight_legal_moves("c3")
+        assert len(legal_moves) == 5
+        self.board.move("c3", "d5")
+        legal_moves = self.board.get_knight_legal_moves("d5")
+        assert len(legal_moves) == 8
+        # reset knight position
+        self.board.move("d5", "b1")
+        # c3 then a3 to block the knight's path
+        self.board.move("c2", "c3")
+        legal_moves = self.board.get_knight_legal_moves("b1")
+        assert len(legal_moves) == 1
+        self.board.move("a2", "a3")
+        legal_moves = self.board.get_knight_legal_moves("b1")
+        assert len(legal_moves) == 0
+        # board edge test
+        self.board.move("b2", "b6")
+        legal_moves = self.board.get_knight_legal_moves("b6")
+        assert len(legal_moves) == 6
+    
     if __name__ == "__main__":
         pass
 
