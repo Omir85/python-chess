@@ -212,7 +212,7 @@ class ChessBoard(board.Board):
         if not self.is_pawn_stuck(square):
             if is_white_starting_position or is_black_starting_position:
                 legal_moves.append(f"{file}{row+2*direction}")
-            if 0 <= row+1*direction < 8:
+            if 0 < row+1*direction <= 8:
                 legal_moves.append(f"{file}{row+1*direction}")
         illegal_moves = []
         for move in legal_moves:
