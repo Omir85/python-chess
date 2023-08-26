@@ -12,7 +12,7 @@ PROJECT PHASES (* == Done):
 * Phase 5: Check
 Phase 5.1: Block
 Phase 5.2: Pin
-Phase 6: Stalemate
+* Phase 6: Stalemate
 * Phase 7: Checkmate
 Phase 8: Promotion
 Phase 9: En passant
