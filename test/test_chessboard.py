@@ -313,6 +313,13 @@ class TestChessboard(unittest.TestCase):
         self.board.move("f8", "h4")
         legal_moves = self.board.get_king_legal_moves("e1")
         assert len(legal_moves) == 0
+        # Reinitialize the board with new config
+        fen = "8/8/8/8/8/8/8/8" + self.board.get_default_fen_end()
+        self.board = chessboard.ChessBoard(100, fen)
+        self.board.configuration["c2"] = "K"
+        self.board.configuration["c3"] = "q"
+        legal_moves = self.board.get_king_legal_moves("c2")
+        assert self.board.configuration["c3"] == "q"
 
     def test_is_in_check(self):
         assert False == self.board.is_in_check("e1")
@@ -324,6 +331,7 @@ class TestChessboard(unittest.TestCase):
         assert False == self.board.is_in_check("f2")
 
     def test_is_checkmate(self):
+        self.board = chessboard.ChessBoard(100)
         assert False == self.board.is_checkmate("e1")
         self.board.move("d2", "d3")
         self.board.move("f8", "b4")
@@ -378,7 +386,7 @@ class TestChessboard(unittest.TestCase):
         # Stalemate: White King in a8 and black Queen in c6
         fen = "K7/1r6/2q5/8/8/8/8/8" + self.board.get_default_fen_end()
         self.board = chessboard.ChessBoard(100, fen)
-        self.board.draw_simple()
+        # self.board.draw_simple()
         # assert self.board.is_stalemate(self.board.LIGHT_PLAYER)
         # self.board.configuration["a2"] = "P"
         # assert not self.board.is_stalemate(self.board.LIGHT_PLAYER)

@@ -310,32 +310,31 @@ class ChessBoard(board.Board):
         #     print(self.get_attackers(square))
         return len(self.get_attackers(square)) > 0
     
-    def get_king_legal_moves(self, square:str):
+    def get_king_legal_moves(self, king_square:str):
         moves = []
-        moves.extend(self.get_squares_ahead(square, -1, 1, limit=1))
-        moves.extend(self.get_squares_ahead(square, -1, 0, limit=1))
-        moves.extend(self.get_squares_ahead(square, -1, -1, limit=1))
-        moves.extend(self.get_squares_ahead(square, 0, -1, limit=1))
-        moves.extend(self.get_squares_ahead(square, 0, 1, limit=1))
-        moves.extend(self.get_squares_ahead(square, 1, -1, limit=1))
-        moves.extend(self.get_squares_ahead(square, 1, 0, limit=1))
-        moves.extend(self.get_squares_ahead(square, 1, 1, limit=1))
+        moves.extend(self.get_squares_ahead(king_square, -1, 1, limit=1))
+        moves.extend(self.get_squares_ahead(king_square, -1, 0, limit=1))
+        moves.extend(self.get_squares_ahead(king_square, -1, -1, limit=1))
+        moves.extend(self.get_squares_ahead(king_square, 0, -1, limit=1))
+        moves.extend(self.get_squares_ahead(king_square, 0, 1, limit=1))
+        moves.extend(self.get_squares_ahead(king_square, 1, -1, limit=1))
+        moves.extend(self.get_squares_ahead(king_square, 1, 0, limit=1))
+        moves.extend(self.get_squares_ahead(king_square, 1, 1, limit=1))
         possible_moves = []
         for move in moves:
             if self.configuration.get(move) is None or self.get_player_from_square(move) != self.current_player:
                 possible_moves.append(move)
         legal_moves = []
-        initial_king_square = square
+        king = self.get_piece(king_square)
         if len(possible_moves) > 0:
-            last_king_square = possible_moves[len(possible_moves)-1]
             for possible_move in possible_moves:
-                king_square = possible_move
-                self.move(square, possible_move)
-                square = king_square
-                if self.is_attacked(possible_move):
-                    continue
-                legal_moves.append(possible_move)
-            self.move(last_king_square, initial_king_square)
+                piece = self.get_piece(possible_move)
+                self.move(king_square, possible_move)
+                if not self.is_attacked(possible_move):
+                    legal_moves.append(possible_move)
+                self.move(possible_move, king_square)
+                self.configuration[possible_move] = piece
+            self.configuration[king_square] = king
         return legal_moves
 
     def get_short_castle_move(self, square):
@@ -478,6 +477,9 @@ class ChessBoard(board.Board):
     
     def get_legal_moves(self, piece:str, square):
         legal_moves = []
+        # self.draw_simple()
+        # print("piece")
+        # print(piece)
         piece = piece.upper()
         if piece == self.PAWN:
             legal_moves.extend(self.get_pawn_legal_moves(square))
