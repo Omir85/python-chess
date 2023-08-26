@@ -286,11 +286,9 @@ class TestChessboard(unittest.TestCase):
         self.board.move("a3", "b3")
         legal_moves = self.board.get_rook_legal_moves("b3")
         assert len(legal_moves) == 11
-        self.board = chessboard.ChessBoard("8/1r6/8/8/8/8/8/8")
+        self.board = chessboard.ChessBoard(100, "8/1r6/8/8/8/8/8/8" + self.board.get_default_fen_end())
         legal_moves = self.board.get_rook_legal_moves("b7")
-        # print("rook b7 legal moves")
-        # print(legal_moves)
-        # assert "b8" in legal_moves
+        assert "b8" in legal_moves
 
     def test_get_queen_legal_moves(self):
         legal_moves = self.board.get_queen_legal_moves("d1")
