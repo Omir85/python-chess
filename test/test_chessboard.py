@@ -123,6 +123,9 @@ class TestChessboard(unittest.TestCase):
         self.board = chessboard.ChessBoard(100, fen="K7/1rq3P1/8/8/8/8/8/8 w KQkq - 0 1")
         legal_moves = self.board.get_pawn_legal_moves("g7")
         assert len(legal_moves) == 1
+        self.board = chessboard.ChessBoard(100, "K7/1r6/2q5/8/8/8/P7/8" + self.board.get_default_fen_end())
+        legal_moves = self.board.get_pawn_legal_moves("a2")
+        assert len(legal_moves) == 2
 
     def test_is_pawn_stuck(self):
         assert False == self.board.is_pawn_stuck("a2")
@@ -285,7 +288,7 @@ class TestChessboard(unittest.TestCase):
         assert len(legal_moves) == 11
         self.board = chessboard.ChessBoard("8/1r6/8/8/8/8/8/8")
         legal_moves = self.board.get_rook_legal_moves("b7")
-        # print("qwe rook b7 legal moves")
+        # print("rook b7 legal moves")
         # print(legal_moves)
         # assert "b8" in legal_moves
 
@@ -388,13 +391,11 @@ class TestChessboard(unittest.TestCase):
 
     def test_is_stalemate(self):
         # Stalemate: White King in a8 and black Queen in c6
-        fen = "K7/1r6/2q5/8/8/8/8/8" + self.board.get_default_fen_end()
-        self.board = chessboard.ChessBoard(100, fen)
-        # self.board.draw_simple()
-        assert self.board.is_stalemate(self.board.LIGHT_PLAYER)
-        self.board.configuration["a2"] = "P"
-        # self.board.draw_simple()
-        # assert not self.board.is_stalemate(self.board.LIGHT_PLAYER)
+        self.board = chessboard.ChessBoard(100, "K7/1r6/2q5/8/8/8/8/8" + self.board.get_default_fen_end())
+        assert self.board.is_stalemated(self.board.LIGHT_PLAYER)
+        # Not stalemate: Same config but a white pawn is in a2
+        self.board = chessboard.ChessBoard(100, "K7/1r6/2q5/8/8/8/P7/8" + self.board.get_default_fen_end())
+        assert not self.board.is_stalemated(self.board.LIGHT_PLAYER)
 
     if __name__ == "__main__":
         pass

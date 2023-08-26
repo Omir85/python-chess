@@ -230,9 +230,6 @@ class ChessBoard(board.Board):
             for _ in range(2):
                 direction_y *= -1
                 squares_ahead = self.get_squares_ahead(square, direction_x, direction_y)
-                # if square == "b7" and direction_x == 0 and direction_y == 1:
-                #     print("squares ahead " + str(direction_x) + ":" + str(direction_y))
-                #     print(squares_ahead)
                 for square_ahead in squares_ahead:
                     if square_ahead not in legal_moves:
                         legal_moves.append(square_ahead)
@@ -267,16 +264,7 @@ class ChessBoard(board.Board):
 
     def get_rook_legal_moves(self, square:str):
         legal_moves = self.get_moves(square, 0, 1)
-        # if square == "b7":
-        #     print("rook b7 vertical legal moves")
-        #     print(legal_moves)
         legal_moves.extend(self.get_moves(square, 1, 0))
-        # if square == "b7":
-        #     print("rook b7 horizontal legal moves")
-        #     print(self.get_moves(square, 1, 0))
-        # if square == "b7":
-        #     print("rook b7 all legal moves")
-        #     print(legal_moves)
         return legal_moves
 
     def get_queen_legal_moves(self, square:str):
@@ -294,8 +282,6 @@ class ChessBoard(board.Board):
         possible_attackers.extend(self.get_squares_ahead(square, 1, -1))
         possible_attackers.extend(self.get_squares_ahead(square, 1, 0))
         possible_attackers.extend(self.get_squares_ahead(square, 1, 1))
-        # if square == "a8":
-        #     print(possible_attackers)
         attackers = []
         for possible_attacker in possible_attackers:
             if self.get_piece(possible_attacker) is not None and self.get_player_from_square(possible_attacker) != self.current_player:
@@ -305,9 +291,6 @@ class ChessBoard(board.Board):
         return attackers
     
     def is_attacked(self, square:str) -> bool:
-        # if square == "b8":
-        #     print("attackers")
-        #     print(self.get_attackers(square))
         return len(self.get_attackers(square)) > 0
     
     def get_king_legal_moves(self, king_square:str):
@@ -384,41 +367,23 @@ class ChessBoard(board.Board):
     
     def is_on_board(self, square):
         column, line = self.from_square(square)
-        # if square == "b8":
-        #     print("is on board ?")
-        #     print(column, line)
-        #     print(0 <= column < 8 and 0 <= line < 8)
         return 0 <= column < 8 and 0 <= line < 8
 
     def get_squares_ahead(self, square, direction_x, direction_y, limit = None):
         squares_ahead = []
         column, line = self.from_square(square)
-        # if square == "b7" and direction_x == 0 and direction_y == 1:
-        #         print("init column line")
-        #         print(column, line)
         while True:
             column += direction_x
             line -= direction_y
             square_ahead = self.to_square(column, line)
-            # if square == "b7" and direction_x == 0 and direction_y == 1:
-            #     print("column line")
-            #     print(column, line)
-            #     print(square_ahead)
             if not self.is_on_board(square_ahead):
                 break
             if self.configuration.get(square_ahead) is None:
-                # if square == "b7" and direction_x == 0 and direction_y == 1:
-                #     print("asd " + square_ahead)
                 squares_ahead.append(square_ahead)
             else:
-                # if square == "b7" and direction_x == 0 and direction_y == 1:
-                #     print("here now")
                 squares_ahead_player = self.get_player_from_square(square_ahead)
                 piece = self.get_piece(square)
                 piece_ahead = self.get_piece(square_ahead)
-                # if square == "b7" and direction_x == 0 and direction_y == 1:
-                #     print("piece ahead " + piece_ahead)
-                #     self.draw_simple()
                 if piece_ahead is None:
                     squares_ahead.append(square_ahead)
                 if squares_ahead_player is not None and (piece is None or squares_ahead_player != self.get_player_from_square(square)):
@@ -426,9 +391,6 @@ class ChessBoard(board.Board):
                 break
             if limit is not None:
                 break
-        # if square == "b7" and direction_x == 0 and direction_y == 1:
-        #     print("get_squares_ahead")
-        #     print(squares_ahead)
         return squares_ahead
 
     def get_board_coordinates(self, square):
@@ -477,9 +439,6 @@ class ChessBoard(board.Board):
     
     def get_legal_moves(self, piece:str, square):
         legal_moves = []
-        # self.draw_simple()
-        # print("piece")
-        # print(piece)
         piece = piece.upper()
         if piece == self.PAWN:
             legal_moves.extend(self.get_pawn_legal_moves(square))
@@ -544,7 +503,7 @@ class ChessBoard(board.Board):
     def switch_player(self):
         self.current_player = self.LIGHT_PLAYER if self.current_player == self.DARK_PLAYER else self.DARK_PLAYER
     
-    def is_stalemate(self, player):
+    def is_stalemated(self, player):
         for square in self.configuration.keys():
             piece = self.configuration.get(square)
             if piece is not None and piece.lower() == "k":
@@ -567,10 +526,7 @@ class ChessBoard(board.Board):
     
     def can_player_move_any_piece_except_king(self, player):
         pieces = self.get_player_pieces(player)
-        for piece, square in pieces.items():
-            print("---------")
-            print(piece, square)
-            print(self.get_legal_moves(piece, square))
+        for square, piece in pieces.items():
             if piece.lower() != "k" and len(self.get_legal_moves(piece, square)) > 0:
                 return True
         return False
