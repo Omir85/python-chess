@@ -279,6 +279,11 @@ class TestChessboard(unittest.TestCase):
         self.board.move("a3", "b3")
         legal_moves = self.board.get_rook_legal_moves("b3")
         assert len(legal_moves) == 11
+        self.board = chessboard.ChessBoard("8/1r6/8/8/8/8/8/8")
+        legal_moves = self.board.get_rook_legal_moves("b7")
+        # print("qwe rook b7 legal moves")
+        # print(legal_moves)
+        # assert "b8" in legal_moves
 
     def test_get_queen_legal_moves(self):
         legal_moves = self.board.get_queen_legal_moves("d1")
@@ -368,6 +373,16 @@ class TestChessboard(unittest.TestCase):
         assert self.board.DARK_PLAYER == self.board.current_player
         self.board.switch_player()
         assert self.board.LIGHT_PLAYER == self.board.current_player
+
+    def test_is_stalemate(self):
+        # Stalemate: White King in a8 and black Queen in c6
+        fen = "K7/1r6/2q5/8/8/8/8/8" + self.board.get_default_fen_end()
+        self.board = chessboard.ChessBoard(100, fen)
+        self.board.draw_simple()
+        # assert self.board.is_stalemate(self.board.LIGHT_PLAYER)
+        # self.board.configuration["a2"] = "P"
+        # assert not self.board.is_stalemate(self.board.LIGHT_PLAYER)
+
 
     if __name__ == "__main__":
         pass

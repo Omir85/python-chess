@@ -42,7 +42,8 @@ class ChessBoard(board.Board):
         PAWN : "♙"
     }
 
-    __STARTING_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+    __DEFAULT_FEN_END = " w KQkq - 0 1"
+    __STARTING_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR" + __DEFAULT_FEN_END
 
     def __init__(self, square_size, fen=None) -> None:
         board.Board.__init__(self, 8, 8, square_size)
@@ -57,6 +58,9 @@ class ChessBoard(board.Board):
         self.has_black_short_castle_rook_moved = False
         self.has_black_long_castle_rook_moved = False
 
+    def get_default_fen_end(self):
+        return self.__DEFAULT_FEN_END
+    
     def next_square(self, file, row):
         file += 1
         if file == 8:
@@ -226,6 +230,9 @@ class ChessBoard(board.Board):
             for _ in range(2):
                 direction_y *= -1
                 squares_ahead = self.get_squares_ahead(square, direction_x, direction_y)
+                # if square == "b7" and direction_x == 0 and direction_y == 1:
+                #     print("squares ahead " + str(direction_x) + ":" + str(direction_y))
+                #     print(squares_ahead)
                 for square_ahead in squares_ahead:
                     if square_ahead not in legal_moves:
                         legal_moves.append(square_ahead)
@@ -260,7 +267,16 @@ class ChessBoard(board.Board):
 
     def get_rook_legal_moves(self, square:str):
         legal_moves = self.get_moves(square, 0, 1)
+        # if square == "b7":
+        #     print("rook b7 vertical legal moves")
+        #     print(legal_moves)
         legal_moves.extend(self.get_moves(square, 1, 0))
+        # if square == "b7":
+        #     print("rook b7 horizontal legal moves")
+        #     print(self.get_moves(square, 1, 0))
+        # if square == "b7":
+        #     print("rook b7 all legal moves")
+        #     print(legal_moves)
         return legal_moves
 
     def get_queen_legal_moves(self, square:str):
@@ -278,6 +294,8 @@ class ChessBoard(board.Board):
         possible_attackers.extend(self.get_squares_ahead(square, 1, -1))
         possible_attackers.extend(self.get_squares_ahead(square, 1, 0))
         possible_attackers.extend(self.get_squares_ahead(square, 1, 1))
+        # if square == "a8":
+        #     print(possible_attackers)
         attackers = []
         for possible_attacker in possible_attackers:
             if self.get_piece(possible_attacker) is not None and self.get_player_from_square(possible_attacker) != self.current_player:
@@ -287,6 +305,9 @@ class ChessBoard(board.Board):
         return attackers
     
     def is_attacked(self, square:str) -> bool:
+        # if square == "b8":
+        #     print("attackers")
+        #     print(self.get_attackers(square))
         return len(self.get_attackers(square)) > 0
     
     def get_king_legal_moves(self, square:str):
@@ -364,27 +385,51 @@ class ChessBoard(board.Board):
     
     def is_on_board(self, square):
         column, line = self.from_square(square)
+        # if square == "b8":
+        #     print("is on board ?")
+        #     print(column, line)
+        #     print(0 <= column < 8 and 0 <= line < 8)
         return 0 <= column < 8 and 0 <= line < 8
 
     def get_squares_ahead(self, square, direction_x, direction_y, limit = None):
         squares_ahead = []
         column, line = self.from_square(square)
+        # if square == "b7" and direction_x == 0 and direction_y == 1:
+        #         print("init column line")
+        #         print(column, line)
         while True:
             column += direction_x
             line -= direction_y
             square_ahead = self.to_square(column, line)
+            # if square == "b7" and direction_x == 0 and direction_y == 1:
+            #     print("column line")
+            #     print(column, line)
+            #     print(square_ahead)
             if not self.is_on_board(square_ahead):
                 break
             if self.configuration.get(square_ahead) is None:
+                # if square == "b7" and direction_x == 0 and direction_y == 1:
+                #     print("asd " + square_ahead)
                 squares_ahead.append(square_ahead)
             else:
+                # if square == "b7" and direction_x == 0 and direction_y == 1:
+                #     print("here now")
                 squares_ahead_player = self.get_player_from_square(square_ahead)
                 piece = self.get_piece(square)
+                piece_ahead = self.get_piece(square_ahead)
+                # if square == "b7" and direction_x == 0 and direction_y == 1:
+                #     print("piece ahead " + piece_ahead)
+                #     self.draw_simple()
+                if piece_ahead is None:
+                    squares_ahead.append(square_ahead)
                 if squares_ahead_player is not None and (piece is None or squares_ahead_player != self.get_player_from_square(square)):
                     squares_ahead.append(square_ahead)
                 break
             if limit is not None:
                 break
+        # if square == "b7" and direction_x == 0 and direction_y == 1:
+        #     print("get_squares_ahead")
+        #     print(squares_ahead)
         return squares_ahead
 
     def get_board_coordinates(self, square):
@@ -496,6 +541,24 @@ class ChessBoard(board.Board):
     
     def switch_player(self):
         self.current_player = self.LIGHT_PLAYER if self.current_player == self.DARK_PLAYER else self.DARK_PLAYER
+    
+    def is_stalemate(self, player):
+        king_square = None
+        for square in self.configuration.keys():
+            if self.configuration.get(square).lower() == "k":
+                piece = self.configuration.get(square)
+                if player == self.LIGHT_PLAYER:
+                    if piece.isupper():
+                        king_square = square
+                else:
+                    if piece.islower():
+                        king_square = square
+        # print("king is on " + king_square)
+        king = self.get_piece(king_square)
+        return not self.is_in_check(king_square) and len(self.get_legal_moves(king, king_square)) == 0
+        # king_legal_moves = self.get_king_legal_moves(king_square)
+        # print(king_legal_moves)
+        # return len(king_legal_moves) == 0
     
     def __str__(self) -> str:
         return self.configuration
