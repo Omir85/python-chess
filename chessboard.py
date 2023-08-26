@@ -545,22 +545,35 @@ class ChessBoard(board.Board):
         self.current_player = self.LIGHT_PLAYER if self.current_player == self.DARK_PLAYER else self.DARK_PLAYER
     
     def is_stalemate(self, player):
-        king_square = None
         for square in self.configuration.keys():
-            if self.configuration.get(square).lower() == "k":
-                piece = self.configuration.get(square)
-                if player == self.LIGHT_PLAYER:
-                    if piece.isupper():
-                        king_square = square
-                else:
-                    if piece.islower():
-                        king_square = square
-        # print("king is on " + king_square)
+            piece = self.configuration.get(square)
+            if piece is not None and piece.lower() == "k":
+                if player == self.LIGHT_PLAYER and piece.isupper():
+                    king_square = square
+                if player == self.DARK_PLAYER and piece.islower():
+                    king_square = square
         king = self.get_piece(king_square)
-        return not self.is_in_check(king_square) and len(self.get_legal_moves(king, king_square)) == 0
-        # king_legal_moves = self.get_king_legal_moves(king_square)
-        # print(king_legal_moves)
-        # return len(king_legal_moves) == 0
+        return not self.can_player_move_any_piece_except_king(player) and not self.is_in_check(king_square) and len(self.get_legal_moves(king, king_square)) == 0
+    
+    def get_player_pieces(self, player) -> dict:
+        player_pieces = {}
+        for square, piece in self.configuration.items():
+            if piece is not None:
+                if player == self.LIGHT_PLAYER and piece.isupper():
+                    player_pieces[square] = piece
+                if player == self.DARK_PLAYER and piece.islower():
+                    player_pieces[square] = piece
+        return player_pieces
+    
+    def can_player_move_any_piece_except_king(self, player):
+        pieces = self.get_player_pieces(player)
+        for piece, square in pieces.items():
+            print("---------")
+            print(piece, square)
+            print(self.get_legal_moves(piece, square))
+            if piece.lower() != "k" and len(self.get_legal_moves(piece, square)) > 0:
+                return True
+        return False
     
     def __str__(self) -> str:
         return self.configuration

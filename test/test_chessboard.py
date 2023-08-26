@@ -386,11 +386,11 @@ class TestChessboard(unittest.TestCase):
         # Stalemate: White King in a8 and black Queen in c6
         fen = "K7/1r6/2q5/8/8/8/8/8" + self.board.get_default_fen_end()
         self.board = chessboard.ChessBoard(100, fen)
-        # self.board.draw_simple()
-        # assert self.board.is_stalemate(self.board.LIGHT_PLAYER)
-        # self.board.configuration["a2"] = "P"
+        self.board.draw_simple()
+        assert self.board.is_stalemate(self.board.LIGHT_PLAYER)
+        self.board.configuration["a2"] = "P"
+        self.board.draw_simple()
         # assert not self.board.is_stalemate(self.board.LIGHT_PLAYER)
-
 
     if __name__ == "__main__":
         pass

@@ -36,7 +36,10 @@ def highlight_squares(window, board:chessboard.ChessBoard, squares):
 def start_game(window):
     legal_moves = []
     run = True
-    board = chessboard.ChessBoard(WINDOW_WIDTH/8)
+    board = chessboard.ChessBoard(WINDOW_WIDTH/8, fen="K7/1P6/1rq5/8/8/8/7P/8 w KQkq - 0 1")
+    board = chessboard.ChessBoard(WINDOW_WIDTH/8, fen="K7/1rq3P1/8/8/8/8/8/8 w KQkq - 0 1")
+    print("is stalemate : ")
+    print(board.is_stalemate(board.LIGHT_PLAYER))
     piece_selected = None
     square_selected = None
     from_square = None
