@@ -50,6 +50,12 @@ class ChessBoard(board.Board):
             fen = self.__STARTING_FEN
         self.configuration = self.from_fen(fen)
         self.current_player = self.LIGHT_PLAYER
+        self.has_white_king_moved = False
+        self.has_black_king_moved = False
+        self.has_white_short_castle_rook_moved = False
+        self.has_white_long_castle_rook_moved = False
+        self.has_black_short_castle_rook_moved = False
+        self.has_black_long_castle_rook_moved = False
 
     def next_square(self, file, row):
         file += 1
@@ -166,9 +172,9 @@ class ChessBoard(board.Board):
         clicked_square = f"{f}{r}"
         return clicked_square
     
-    def did_click_on_player_piece(self, player, square) -> bool:
+    def did_click_on_player_piece(self, square) -> bool:
         piece = self.configuration.get(square)
-        return piece is not None and player == self.get_position_player(piece)
+        return piece is not None and self.current_player == self.get_position_player(piece)
 
     def get_piece(self, square):
         return self.configuration.get(square)
@@ -262,7 +268,7 @@ class ChessBoard(board.Board):
         legal_moves.extend(self.get_rook_legal_moves(square))
         return legal_moves
 
-    def is_attacked(self, square:str) -> bool:
+    def get_attackers(self, square:str):
         possible_attackers = []
         possible_attackers.extend(self.get_squares_ahead(square, -1, -1))
         possible_attackers.extend(self.get_squares_ahead(square, -1, 0))
@@ -278,7 +284,10 @@ class ChessBoard(board.Board):
                 legal_moves = self.get_legal_moves(self.get_piece(possible_attacker), possible_attacker)
                 if square in legal_moves:
                     attackers.append(possible_attacker)
-        return len(attackers) > 0
+        return attackers
+    
+    def is_attacked(self, square:str) -> bool:
+        return len(self.get_attackers(square)) > 0
     
     def get_king_legal_moves(self, square:str):
         moves = []
@@ -309,18 +318,38 @@ class ChessBoard(board.Board):
         return legal_moves
 
     def get_short_castle_move(self, square):
+        if self.has_white_king_moved or self.has_white_short_castle_rook_moved:
+            return []
         if self.current_player == self.LIGHT_PLAYER:
             squares_to_check_if_empty = ["f1", "g1"]
-            for square_to_check in squares_to_check_if_empty:
-                if self.configuration.get(square_to_check) != None:
-                    return []
-                if self.is_attacked(square_to_check):
-                    return []
-        return ["g1"]
+        else:
+            squares_to_check_if_empty = ["f8", "g8"]
+        for square_to_check in squares_to_check_if_empty:
+            if self.configuration.get(square_to_check) != None:
+                return []
+            if self.is_attacked(square_to_check):
+                return []
+        if self.current_player == self.LIGHT_PLAYER:
+            return ["g1"]
+        else:
+            return ["g8"]
     
     def get_long_castle_move(self, square):
-        legal_moves = []
-        return legal_moves
+        if self.has_white_king_moved or self.has_white_long_castle_rook_moved:
+            return []
+        if self.current_player == self.LIGHT_PLAYER:
+            squares_to_check_if_empty = ["b1", "c1", "d1"]
+        else:
+            squares_to_check_if_empty = ["b8", "c8", "d8"]
+        for square_to_check in squares_to_check_if_empty:
+            if self.configuration.get(square_to_check) != None:
+                return []
+            if self.is_attacked(square_to_check):
+                return []
+        if self.current_player == self.LIGHT_PLAYER:
+            return ["c1"]
+        else:
+            return ["c8"]
     
     def from_square(self, square:str):
         column = self.convert(square[0])
@@ -422,6 +451,24 @@ class ChessBoard(board.Board):
         return legal_moves
 
     def move(self, from_square, to_square):
+        piece = self.get_piece(from_square)
+        if piece == self.KING:
+            if self.get_player_from_square(from_square) == self.LIGHT_PLAYER:
+                self.has_white_king_moved = True
+            else:
+                self.has_black_king_moved = True
+        if piece == self.ROOK:
+            if self.get_player_from_square(from_square) == self.LIGHT_PLAYER:
+                if from_square == "h1":
+                    self.has_white_short_castle_rook_moved = True
+                if from_square == "a1":
+                    self.has_white_long_castle_rook_moved = True
+            else:
+                if from_square == "h8":
+                    self.has_black_short_castle_rook_moved = True
+                if from_square == "a8":
+                    self.has_black_long_castle_rook_moved = True
+
         self.configuration[to_square] = self.configuration.get(from_square)
         self.configuration[from_square] = None
 
@@ -446,6 +493,9 @@ class ChessBoard(board.Board):
     def is_checkmate(self, king_square:str):
         king = self.get_piece(king_square)
         return self.is_in_check(king_square) and len(self.get_legal_moves(king, king_square)) == 0
+    
+    def switch_player(self):
+        self.current_player = self.LIGHT_PLAYER if self.current_player == self.DARK_PLAYER else self.DARK_PLAYER
     
     def __str__(self) -> str:
         return self.configuration

@@ -34,7 +34,6 @@ def highlight_squares(window, board:chessboard.ChessBoard, squares):
         board.highlight_square(window, coordinates[0] / board.square_size, coordinates[1] / board.square_size)
 
 def start_game(window):
-    global current_player
     legal_moves = []
     run = True
     board = chessboard.ChessBoard(WINDOW_WIDTH/8)
@@ -52,7 +51,7 @@ def start_game(window):
                     highlight_squares(window, board, [square])
                     if piece_selected == None:
                         # the player did not have a piece selected
-                        if board.did_click_on_player_piece(current_player, square):
+                        if board.did_click_on_player_piece(square):
                             piece_selected = board.get_piece(square)
                             square_selected = square
                             legal_moves = board.get_legal_moves(piece_selected, square)
@@ -65,17 +64,15 @@ def start_game(window):
                             board.move(from_square, square)
                             from_square = None
                             legal_moves = []
-                            # TODO handle check
-                            # TODO handle checkmate
                             # TODO handle stalemate
                             piece_selected = None
                             square_selected = None
-                            current_player = board.get_other_player(current_player)
+                            board.switch_player()
                         else:
                             # keep piece selected if illegal move
                             pass
                         # unselect if same piece clicked twice
-                        if board.did_click_on_player_piece(current_player, square):
+                        if board.did_click_on_player_piece(square):
                             if square == square_selected:
                                 legal_moves = []
                                 piece_selected = None

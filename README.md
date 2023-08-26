@@ -7,7 +7,7 @@ PROJECT PHASES (* == Done):
 * Phase 2: Pieces are on the board
 * Phase 2.5: Implement chess notation to quickload a board
 * Phase 3: Pieces can move
-Phase 3.5: Castling (short and long)
+* Phase 3.5: Castling (short and long)
 * Phase 4: Pieces can take
 * Phase 5: Check
 Phase 5.1: Block
