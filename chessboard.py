@@ -91,6 +91,32 @@ class ChessBoard(board.Board):
                     raise Exception(f"Unexpected fen content: {piece} in {contents}")
         return fen_configuration
 
+    def get_fen_row(self, row):
+        fen_row = ""
+        empty_squares = 0
+        for file in range(8):
+            piece = self.get_piece(self.get_file(file)+str(8-row+1))
+            if piece == None:
+                empty_squares += 1
+            else:
+                if empty_squares > 0:
+                    fen_row += str(empty_squares)
+                    empty_squares = 0
+                fen_row += piece
+            # Handle line without a piece
+            if file == 7 and empty_squares > 0:
+                fen_row += str(empty_squares)
+        return fen_row
+
+    def to_fen(self) -> str:
+        fen = ""
+        for i in range(8):
+            row = self.get_fen_row(i+1)
+            fen += row
+            if i < self.columns - 1:
+                fen += "/"
+        return fen + self.get_default_fen_end()
+    
     def get_row(self, row):
         return str(8 - row)
 

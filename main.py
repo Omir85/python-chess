@@ -64,10 +64,10 @@ def start_game(window):
                             board.move(from_square, square)
                             from_square = None
                             legal_moves = []
-                            # TODO handle stalemate
                             piece_selected = None
                             square_selected = None
                             board.switch_player()
+                            print(board.to_fen())
                         else:
                             # keep piece selected if illegal move
                             pass

@@ -395,6 +395,10 @@ class TestChessboard(unittest.TestCase):
         self.board = chessboard.ChessBoard(100, "K7/1r6/2q5/8/8/8/P7/8" + self.board.get_default_fen_end())
         assert not self.board.is_stalemated(self.board.LIGHT_PLAYER)
 
+    def test_to_fen(self):
+        fen = self.board.to_fen()
+        assert fen == "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+    
     if __name__ == "__main__":
         pass
 
