@@ -2,6 +2,19 @@
 
 Project created to train on python / pygame to develop a chess game.
 
+LICENSE
+GNU Affero General Public License v3.0
+See license.md for the license terms
+
+LAUNCH INSTRUCTIONS
+
+For the game:
+python main.py
+
+For unit tests:
+python -m unittest test/test_chessboard.py
+
+
 PROJECT PHASES (* == Done):
 * Phase 1: Board is displayed with rows and files
 * Phase 2: Pieces are on the board
