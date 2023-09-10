@@ -399,6 +399,22 @@ class TestChessboard(unittest.TestCase):
         fen = self.board.to_fen()
         assert fen == "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
     
+    def test_get_en_passant_move(self):
+        fen = "8/pppppppp/8/P7/8/8/8/8 w KQkq - 0 1"
+        self.board = chessboard.ChessBoard(100, fen)
+        a5_moves = self.board.get_en_passant_move("a5")
+        assert len(a5_moves) == 0
+        legal_moves = self.board.get_legal_moves(self.board.PAWN, "a5")
+        assert len(legal_moves) == 1
+        self.board.move("b7", "b5")
+        a5_moves = self.board.get_en_passant_move("a5")
+        assert len(a5_moves) == 1
+        assert "b6" in a5_moves
+        legal_moves = self.board.get_legal_moves(self.board.PAWN, "a5")
+        assert len(legal_moves) == 2
+        assert "b6" in legal_moves
+        assert "a6" in legal_moves
+    
     if __name__ == "__main__":
         pass
 

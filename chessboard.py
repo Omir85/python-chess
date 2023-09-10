@@ -58,6 +58,9 @@ class ChessBoard(board.Board):
         self.has_black_short_castle_rook_moved = False
         self.has_black_long_castle_rook_moved = False
 
+        self.white_en_passant_target_file = None
+        self.black_en_passant_target_file = None
+
     def get_default_fen_end(self):
         return self.__DEFAULT_FEN_END
     
@@ -180,7 +183,7 @@ class ChessBoard(board.Board):
     def convert(self, file : str) -> int:
         return ord(file) - ChessBoard.ASCII_FOR_LOWER_CASE_A
     
-    def get_hightlight_square_coordinates(self, square):
+    def get_highlight_square_coordinates(self, square):
         file, row = self.from_square(square)
         coordinates = file * self.square_size, self.square_size * row
         return coordinates
@@ -221,17 +224,17 @@ class ChessBoard(board.Board):
             return False
         return self.get_player_from_square(forward_square) == self.get_other_player(self.current_player)
 
-    def is_light_player(self, square):
+    def is_white_player(self, square):
         return self.get_player_from_square(square) == self.LIGHT_PLAYER
 
     def get_direction(self, square):
-        return 1 if self.is_light_player(square) else -1
+        return 1 if self.is_white_player(square) else -1
 
     def get_pawn_legal_moves(self, square:str):
         legal_moves = []
         file = square[0]
         row = int(square[1])
-        is_white_player = self.is_light_player(square)
+        is_white_player = self.is_white_player(square)
         is_white_starting_position = row == 2 and is_white_player
         is_black_starting_position = row == 7 and not is_white_player
         direction = self.get_direction(square)
@@ -468,6 +471,7 @@ class ChessBoard(board.Board):
         piece = piece.upper()
         if piece == self.PAWN:
             legal_moves.extend(self.get_pawn_legal_moves(square))
+            legal_moves.extend(self.get_en_passant_move(square))
         if piece == self.BISHOP:
             legal_moves.extend(self.get_bishop_legal_moves(square))
         if piece == self.KNIGHT:
@@ -483,7 +487,7 @@ class ChessBoard(board.Board):
         return legal_moves
 
     def move(self, from_square, to_square):
-        piece = self.get_piece(from_square)
+        piece = self.get_piece(from_square).upper()
         if piece == self.KING:
             if self.get_player_from_square(from_square) == self.LIGHT_PLAYER:
                 self.has_white_king_moved = True
@@ -500,10 +504,17 @@ class ChessBoard(board.Board):
                     self.has_black_short_castle_rook_moved = True
                 if from_square == "a8":
                     self.has_black_long_castle_rook_moved = True
+        if piece == self.PAWN:
+            file, row = self.from_square(to_square)
+            is_white_player = self.is_white_player(from_square)
+            if is_white_player and 8 - row == 4:
+                self.white_en_passant_target_file = file
+            if not is_white_player and 8 - row == 5:
+                self.black_en_passant_target_file = file
 
         self.configuration[to_square] = self.configuration.get(from_square)
         self.configuration[from_square] = None
-
+    
     def _is_attacking_piece(self, attacking_player, attacked_square):
         return attacking_player != self.get_player_from_square(attacked_square)
 
@@ -557,6 +568,22 @@ class ChessBoard(board.Board):
                 return True
         return False
     
+    def is_next_file(self, file, target_file):
+        if target_file is None:
+            return False
+        return (file - target_file == 1) or (file - target_file == -1)
+
+    def get_en_passant_move(self, square):
+        en_passant_move = []
+        file, row = self.from_square(square)
+        if self.is_white_player(square):
+            if 8 - row == 5 and self.is_next_file(file, self.black_en_passant_target_file):
+                en_passant_move.append(self.get_file(self.black_en_passant_target_file) + str(8 - row + 1))
+        else:
+            if 8 - row == 4 and self.is_next_file(file, self.white_en_passant_target_file):
+                en_passant_move.append(self.get_file(self.white_en_passant_target_file) + str(8 - row - 1))
+        return en_passant_move
+
     def __str__(self) -> str:
         return self.configuration
     
