@@ -415,6 +415,34 @@ class TestChessboard(unittest.TestCase):
         assert "b6" in legal_moves
         assert "a6" in legal_moves
     
+    def test_take_en_passant_for_white_on_B_file_from_A_file(self):
+        fen = "8/pppppppp/8/P7/8/8/8/8 w KQkq - 0 1"
+        self.board = chessboard.ChessBoard(100, fen)
+        self.board.move("b7", "b5")
+        assert self.board.get_piece("b7") is None
+        assert self.board.get_piece("b5") is not None
+        self.board.move("a5", "b6")
+        assert self.board.get_piece("b5") is None
+
+    def test_take_en_passant_for_white_on_A_file_from_B_file(self):
+        fen = "8/pppppppp/8/1P6/8/8/8/8 w KQkq - 0 1"
+        self.board = chessboard.ChessBoard(100, fen)
+        self.board.move("a7", "a5")
+        assert self.board.get_piece("a7") is None
+        assert self.board.get_piece("a5") is not None
+        self.board.move("b5", "a6")
+        assert self.board.get_piece("a5") is None
+    
+    # def test_take_en_passant_for_black_on_A_file_from_B_file(self):
+    #     fen = "8/8/8/8/1p6/8/PPPPPPPP/8 w KQkq - 0 1"
+    #     self.board = chessboard.ChessBoard(100, fen)
+    #     self.board.move("a2", "a4")
+    #     assert self.board.get_piece("a2") is None
+    #     assert self.board.get_piece("a4") is not None
+    #     self.board.move("b4", "a3")
+    #     self.board.draw_simple()
+    #     assert self.board.get_piece("a4") is None
+
     if __name__ == "__main__":
         pass
 

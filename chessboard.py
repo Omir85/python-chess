@@ -60,6 +60,8 @@ class ChessBoard(board.Board):
 
         self.white_en_passant_target_file = None
         self.black_en_passant_target_file = None
+        self.white_en_passant_pawn = None
+        self.black_en_passant_pawn = None
 
     def get_default_fen_end(self):
         return self.__DEFAULT_FEN_END
@@ -506,12 +508,35 @@ class ChessBoard(board.Board):
                     self.has_black_long_castle_rook_moved = True
         if piece == self.PAWN:
             file, row = self.from_square(to_square)
+            # print(f"{from_square} - {to_square}")
+            # print(f"{file}{row}")
+            # flag for letting the other player use en passant move
             is_white_player = self.is_white_player(from_square)
             if is_white_player and 8 - row == 4:
                 self.white_en_passant_target_file = file
             if not is_white_player and 8 - row == 5:
                 self.black_en_passant_target_file = file
-
+            # check if taking en passant
+            if is_white_player:
+                if row == 2: # row is indexed from 0, row 2 means 8-2-1 = 5th row (A5-H5)
+                    if self.black_en_passant_target_file is not None:
+                        distance = self.black_en_passant_target_file - file
+                        if distance == 0:
+                            # take en passant
+                            en_passant_square = self.get_file(self.black_en_passant_target_file) + str(5)
+                            self.configuration[en_passant_square] = None
+            # else:
+            #     print(f"row {row}")
+            #     if row == 5: # row is indexed from 0, row 5 means 8-5-1 = 2nd row (A2-H2)
+            #         print(f"white_en_passant_target_file {self.white_en_passant_target_file}")
+            #         if self.white_en_passant_target_file is not None:
+            #             print(f"file {file}")
+            #             distance = self.white_en_passant_target_file - file
+            #             if distance == 0:
+            #                 # take en passant
+            #                 en_passant_square = self.get_file(self.white_en_passant_target_file) + str(3)
+            #                 print("en_passant_square " + en_passant_square)
+            #                 self.configuration[en_passant_square] = None
         self.configuration[to_square] = self.configuration.get(from_square)
         self.configuration[from_square] = None
     
