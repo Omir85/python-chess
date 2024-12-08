@@ -6,14 +6,23 @@ LICENSE
 GNU Affero General Public License v3.0
 See license.md for the license terms
 
+SETUP VIRTUAL ENVIRONMENT
+
+python -m venv venv
+
+INSTALL THE REQUIREMENTS
+pip install -r requirements.txt
+
 LAUNCH INSTRUCTIONS
 
-For the game:
+Run the virtual environment:
+source venv/Script/activate
+
+Run the game:
 python main.py
 
-For unit tests:
+Run the tests:
 python -m unittest test/test_chessboard.py
-
 
 PROJECT PHASES (* == Done):
 * Phase 1: Board is displayed with rows and files
