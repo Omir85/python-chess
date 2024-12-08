@@ -394,6 +394,15 @@ class TestChessboard(unittest.TestCase):
         # Not stalemate: Same config but a white pawn is in a2
         self.board = chessboard.ChessBoard(100, "K7/1r6/2q5/8/8/8/P7/8" + self.board.get_default_fen_end())
         assert not self.board.is_stalemated(self.board.LIGHT_PLAYER)
+    
+    def test_is_checkmate2(self):
+        # Checkmate: White king is in check and has no safe space to go, and no piece can capture the attacker while not still being in check
+        self.board = chessboard.ChessBoard(100, "K7/1r6/2q5/8/8/8/P7/8" + self.board.get_default_fen_end())
+        assert not self.board.is_checkmate("a8")
+        self.board.move("a2", "a4")
+        self.board.move("c6", "c8")
+        # white king should be checkmated
+        assert self.board.is_checkmate("a8")
 
     def test_to_fen(self):
         fen = self.board.to_fen()
