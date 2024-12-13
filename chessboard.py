@@ -624,20 +624,44 @@ class ChessBoard(board.Board):
     def draw_simple(self):
         for line in range(self.rows):
             if line == 0:
-                print()
-                for column in range(self.columns):
-                    print(" _", end="")
-                print()
-            for column in range(self.columns):
-                row = self.get_row(line)
-                file = self.get_file(column)
-                square = file + row
+                self.draw_top_border()
+            self.draw_pieces(line)
+            self.draw_square_coordinates(line)
+            self.draw_bottom_border()
+    
+    def draw_top_border(self):
+        self.new_line()
+        for column in range(self.columns):
+            print(" __", end="")
+        self.new_line()
+    
+    def draw_pieces(self, line):
+        self.draw_cell(line, "pieces")
+    
+    def draw_square_coordinates(self, line):
+        self.draw_cell(line, "coordinates")
+    
+    def draw_cell(self, line, type):
+        for column in range(self.columns):
+            row = self.get_row(line)
+            file = self.get_file(column)
+            square = file + row
+            if type == "pieces":
                 if self.configuration.get(square) == None:
-                    square_content = " "
+                    square_content = "  "
                 else:
-                    square_content = self.configuration.get(square)
-                print(f"|{square_content}", end="")
-            print("|")
-            for column in range(self.columns):
-                print("|_", end="")
-            print("|")
+                    square_content = " " + self.configuration.get(square)
+            elif type == "coordinates":
+                square_content = square
+            else:
+                square_content = "  "
+            print(f"|{square_content}", end="")
+        print("|")
+
+    def draw_bottom_border(self):
+        for column in range(self.columns):
+            print("|__", end="")
+        print("|")
+    
+    def new_line(self):
+        print()
