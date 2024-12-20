@@ -512,34 +512,32 @@ class ChessBoard(board.Board):
                     self.has_black_short_castle_rook_moved = True
                 if from_square == "a8":
                     self.has_black_long_castle_rook_moved = True
-        print(f"white {self.is_white_player(from_square)} piece {piece}")
         if piece == self.PAWN:
             file, row = self.from_square(to_square)
             # flag for letting the other player use en passant move
             is_white_player = self.is_white_player(from_square)
             if is_white_player and row == 4:
                 self.black_en_passant_target_file = file
-            print(f"row {row} white {is_white_player}")
             if not is_white_player and row == 3:
                 self.white_en_passant_target_file = file
             
             # check if taking en passant
             if is_white_player:
                 if row == 2: # row is indexed from 0, row 2 means 8-2-1 = 5th row (A5-H5)
-                    if self.black_en_passant_target_file is not None:
-                        distance = self.black_en_passant_target_file - file
-                        if distance == 0:
-                            # take en passant
-                            en_passant_square = self.get_file(self.black_en_passant_target_file) + str(5)
-                            self.configuration[en_passant_square] = None
-            else:
-                # print(f"black going from {from_square} to {to_square}")
-                if row == 5: # row is indexed from 0, row 5 means 8-5-1 = 2nd row (A2-H2)
                     if self.white_en_passant_target_file is not None:
                         distance = self.white_en_passant_target_file - file
                         if distance == 0:
                             # take en passant
-                            en_passant_square = self.get_file(self.white_en_passant_target_file) + str(4)
+                            en_passant_square = self.get_file(self.white_en_passant_target_file) + str(5)
+                            self.configuration[en_passant_square] = None
+            else:
+                # print(f"black going from {from_square} to {to_square}")
+                if row == 5: # row is indexed from 0, row 5 means 8-5-1 = 2nd row (A2-H2)
+                    if self.black_en_passant_target_file is not None:
+                        distance = self.black_en_passant_target_file - file
+                        if distance == 0:
+                            # take en passant
+                            en_passant_square = self.get_file(self.black_en_passant_target_file) + str(4)
                             self.configuration[en_passant_square] = None
         self.configuration[to_square] = self.configuration.get(from_square)
         self.configuration[from_square] = None
@@ -600,32 +598,21 @@ class ChessBoard(board.Board):
     def is_next_file(self, file, target_file):
         if target_file is None:
             return False
-        print(f"file {file}")
-        print(f"target_file {target_file}")
         diff1 = file - target_file
         diff2 = target_file - file
-        print(f"diff 1 {diff1}")
-        print(f"diff 2 {diff2}")
         is_next_file = (diff1 == 1) or (diff2 == 1)
-        print(f"is next file {is_next_file}")
         return is_next_file
 
     def get_en_passant_move(self, square):
         en_passant_move = []
         file, row = self.from_square(square)
         if self.is_white_player(square):
-            print(f"white on {square} {row}")
             # issue here, need to set black_en_passant_target_file when black moves
-            print(f"white_en_passant_target_file {self.white_en_passant_target_file}")
             if row == 3 and self.is_next_file(file, self.white_en_passant_target_file):
-                print("append en passant move for white, square " + square)
                 en_passant_move.append(self.get_file(self.white_en_passant_target_file) + str(8 - row + 1))
         else:
-            # print(f"black on {square}")
             if row == 5 and self.is_next_file(file, self.white_en_passant_target_file):
-                # print("append en passant move for black, square " + square)
                 en_passant_move.append(self.get_file(self.white_en_passant_target_file) + str(8 - row - 1))
-        # print(f"en_passant_move {en_passant_move}")
         return en_passant_move
 
     def __str__(self) -> str:
