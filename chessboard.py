@@ -11,6 +11,8 @@ class ChessBoard(board.Board):
     LIGHT_PLAYER = colors.WHITE_COLOR
 
     HIGHLIGHT_COLOR = colors.ORANGE_COLOR
+    CHECK_COLOR = colors.YELLOW_COLOR
+    CHECKMATE_COLOR = colors.RED_COLOR
 
     players = [LIGHT_PLAYER, DARK_PLAYER]
     player_colors = [DARK_PLAYER, LIGHT_PLAYER]
@@ -142,8 +144,8 @@ class ChessBoard(board.Board):
     def draw_square(self, window, row, column, square):
         pygame.draw.rect(window, self.get_color(square), self.get_area(row, column))
 
-    def highlight_square(self, window, row, column):
-        pygame.draw.rect(window, self.HIGHLIGHT_COLOR, self.get_area(row, column), 3)
+    def highlight_square(self, window, row, column, color=HIGHLIGHT_COLOR):
+        pygame.draw.rect(window, color, self.get_area(row, column), 3)
 
     def switch_color(self, square):
         if square == ChessBoard.LIGHT_SQUARE:

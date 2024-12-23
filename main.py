@@ -33,6 +33,23 @@ def highlight_squares(window, board:chessboard.ChessBoard, squares):
         coordinates = board.get_highlight_square_coordinates(square)
         board.highlight_square(window, coordinates[0] / board.square_size, coordinates[1] / board.square_size)
 
+def highlight_king_square(window, board:chessboard.ChessBoard, square, status):
+    # on check status, color square in yellow
+    if status == "CHECK":
+        color = board.CHECK_COLOR
+        print(f"Marking square {square} in {color}")
+        coordinates = board.get_highlight_square_coordinates(square)
+        board.highlight_square(window, coordinates[0] / board.square_size, coordinates[1] / board.square_size, color)
+    elif status == "CHECKMATE":
+        # on checkmate status, color square in red
+        color = board.CHECKMATE_COLOR
+        print(f"Marking square {square} in {color}")
+        coordinates = board.get_highlight_square_coordinates(square)
+        board.highlight_square(window, coordinates[0] / board.square_size, coordinates[1] / board.square_size, color)
+    else:
+        # unknown status
+        print(f"Status unknown: {status}")
+
 def start_game(window):
     legal_moves = []
     run = True
@@ -88,6 +105,14 @@ def start_game(window):
         board.place_pieces(window)
         highlight_squares(window, board, legal_moves)
         
+        # MANUAL TEST
+        # square = "e1"
+        # status = "CHECK"
+        # highlight_king_square(window, board, square, status)
+        # square = "e8"
+        # status = "CHECKMATE"
+        # highlight_king_square(window, board, square, status)
+
         redraw_window()
 
 def main():
