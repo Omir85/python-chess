@@ -31,8 +31,9 @@ PROJECT PHASES (* == Done):
 * Phase 3: Pieces can move
 * Phase 3.5: Castling (short and long)
 * Phase 4: Pieces can take
-* Phase 5: Check
-Phase 5.1: Block
+Phase 5: Check
+* Phase 5.0: Simple check condition
+Phase 5.1: Block - restrict movement of checked player pieces to only squares in the path of the checking piece. If 2 pieces are checking, checked king must move out of check.
 Phase 5.2: Pin
 * Phase 6: Stalemate
 * Phase 7: Checkmate
@@ -40,6 +41,18 @@ Phase 8: Promotion
 Phase 9: En passant
 Phase 10: Implement time
 Phase 11: Draw
+
+Other ideas of TODO
+Move history
+Undo
+Arrows
+Color checked king
+Color checkmated king
+Area for taken pieces
+Save game
+Restore game
+Archive game
+Replay archived game
 
 RULES SECTION
 
