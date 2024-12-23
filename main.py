@@ -62,6 +62,11 @@ def start_game(window):
             if should_exit(event):
                 print("stopping game")
                 run = False
+            elif should_take_fen_snapshot(event):
+                print("taking fen snapshot")
+                fen_snapshot = take_fen_snapshot(board)
+                # does not print until game is stopped
+                print(f"{fen_snapshot}")
             else:
                 if is_click(event):
                     square = board.get_clicked_square(pygame.mouse.get_pos())
@@ -114,6 +119,15 @@ def start_game(window):
         # highlight_king_square(window, board, square, status)
 
         redraw_window()
+
+def should_take_fen_snapshot(event):
+    if event.type == pygame.KEYDOWN:
+        if event.key == pygame.K_p:
+            return True
+    return False
+
+def take_fen_snapshot(board):
+    return board.to_fen()
 
 def main():
     window = create_window(WINDOW_WIDTH, WINDOW_HEIGHT, "Chess")
