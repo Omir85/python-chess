@@ -72,14 +72,10 @@ def start_game(window):
                             square_selected = None
                             board.switch_player()
                         else:
-                            # keep piece selected if illegal move
-                            pass
-                        # unselect if same piece clicked twice
-                        if board.did_click_on_player_piece(square):
-                            if square == square_selected:
-                                legal_moves = []
-                                piece_selected = None
-                                square_selected = None
+                            # unselect the piece if not legal move
+                            legal_moves = []
+                            piece_selected = None
+                            square_selected = None
         clear_window(window)
         board.draw(window, legal_moves)
         board.place_pieces(window)
