@@ -408,6 +408,90 @@ class TestChessboard(unittest.TestCase):
         fen = self.board.to_fen()
         assert fen == "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
     
+    def test_is_next_file(self):
+        assert self.board.is_next_file(0, 0) == False
+        assert self.board.is_next_file(0, 1) == True
+        assert self.board.is_next_file(1, 0) == True
+        assert self.board.is_next_file(2, 0) == False
+        assert self.board.is_next_file(0, 2) == False
+
+    def test_get_en_passant_move(self):
+        fen = "8/pppppppp/8/P7/8/8/8/8 w KQkq - 0 1"
+        self.board = chessboard.ChessBoard(100, fen)
+        a5_move = self.board.get_en_passant_move("a5")
+        assert len(a5_move) == 0
+        legal_moves = self.board.get_legal_moves(self.board.PAWN, "a5")
+        assert len(legal_moves) == 1
+        self.board.move("b7", "b5")
+        a5_move = self.board.get_en_passant_move("a5")
+        assert len(a5_move) == 1
+        assert "b6" in a5_move
+        legal_moves = self.board.get_legal_moves(self.board.PAWN, "a5")
+        assert len(legal_moves) == 2
+        assert "b6" in legal_moves
+        assert "a6" in legal_moves
+    
+    def test_take_en_passant_for_white_on_B_file_from_A_file(self):
+        fen = "8/pppppppp/8/P7/8/8/8/8 w KQkq - 0 1"
+        self.board = chessboard.ChessBoard(100, fen)
+        self.board.move("b7", "b5")
+        assert self.board.get_piece("b7") is None
+        assert self.board.get_piece("b5") is not None
+        self.board.move("a5", "b6")
+        # test that taking en passant works
+        assert self.board.get_piece("b5") is None
+
+    def test_take_en_passant_for_white_on_A_file_from_B_file(self):
+        fen = "8/pppppppp/8/1P6/8/8/8/8 w KQkq - 0 1"
+        self.board = chessboard.ChessBoard(100, fen)
+        self.board.move("a7", "a5")
+        assert self.board.get_piece("a7") is None
+        assert self.board.get_piece("a5") is not None
+        self.board.move("b5", "a6")
+        assert self.board.get_piece("a5") is None
+    
+    def test_take_en_passant_for_black_on_A_file_from_B_file(self):
+        fen = "8/8/8/8/1p6/8/PPPPPPPP/8 w KQkq - 0 1"
+        self.board = chessboard.ChessBoard(100, fen)
+        self.board.move("a2", "a4")
+        assert self.board.get_piece("a2") is None
+        assert self.board.get_piece("a4") is not None
+        self.board.move("b4", "a3")
+        assert self.board.get_piece("a4") is None
+
+    def test_take_en_passant_for_black_on_B_file_from_A_file(self):
+        fen = "8/8/8/8/p7/8/PPPPPPPP/8 w KQkq - 0 1"
+        self.board = chessboard.ChessBoard(100, fen)
+        self.board.move("b2", "b4")
+        assert self.board.get_piece("b2") is None
+        assert self.board.get_piece("b4") is not None
+        self.board.move("a4", "b3")
+        assert self.board.get_piece("a3") is None
+
+    # def test_moves_is_empty_on_game_start(self):
+    #     self.board = chessboard.ChessBoard(100)
+    #     assert len(self.board.moves) == 0
+    
+    # def test_moves_length_is_one_after_first_move(self):
+    #     self.board = chessboard.ChessBoard(100)
+    #     self.board.move("e2", "e4")
+    #     assert len(self.board.moves) == 1
+    #     assert self.board.moves[0].color == self.board.LIGHT_PLAYER
+    #     assert self.board.moves[0].piece == "P"
+    #     assert self.board.moves[0].origin == "e2"
+    #     assert self.board.moves[0].destination == "e4"
+
+    # def test_moves_length_is_two_after_second_move(self):
+    #     self.board = chessboard.ChessBoard(100)
+    #     self.board.move("e2", "e4")
+    #     self.board.move("e7", "e5")
+    #     # self.board.draw_simple()
+    #     assert len(self.board.moves) == 2
+    #     assert self.board.moves[1].color == self.board.DARK_PLAYER
+    #     assert self.board.moves[1].piece == "P"
+    #     assert self.board.moves[1].origin == "e7"
+    #     assert self.board.moves[1].destination == "e5"
+
     if __name__ == "__main__":
         pass
 

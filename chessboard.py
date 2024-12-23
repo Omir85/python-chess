@@ -1,6 +1,7 @@
 import pygame
 import board
 import colors
+import move
 
 class ChessBoard(board.Board):
 
@@ -57,6 +58,13 @@ class ChessBoard(board.Board):
         self.has_white_long_castle_rook_moved = False
         self.has_black_short_castle_rook_moved = False
         self.has_black_long_castle_rook_moved = False
+
+        self.white_en_passant_target_file = None
+        self.black_en_passant_target_file = None
+        self.white_en_passant_pawn = None
+        self.black_en_passant_pawn = None
+
+        self.moves = []
 
     def get_default_fen_end(self):
         return self.__DEFAULT_FEN_END
@@ -180,7 +188,7 @@ class ChessBoard(board.Board):
     def convert(self, file : str) -> int:
         return ord(file) - ChessBoard.ASCII_FOR_LOWER_CASE_A
     
-    def get_hightlight_square_coordinates(self, square):
+    def get_highlight_square_coordinates(self, square):
         file, row = self.from_square(square)
         coordinates = file * self.square_size, self.square_size * row
         return coordinates
@@ -221,17 +229,17 @@ class ChessBoard(board.Board):
             return False
         return self.get_player_from_square(forward_square) == self.get_other_player(self.current_player)
 
-    def is_light_player(self, square):
+    def is_white_player(self, square):
         return self.get_player_from_square(square) == self.LIGHT_PLAYER
 
     def get_direction(self, square):
-        return 1 if self.is_light_player(square) else -1
+        return 1 if self.is_white_player(square) else -1
 
     def get_pawn_legal_moves(self, square:str):
         legal_moves = []
         file = square[0]
         row = int(square[1])
-        is_white_player = self.is_light_player(square)
+        is_white_player = self.is_white_player(square)
         is_white_starting_position = row == 2 and is_white_player
         is_black_starting_position = row == 7 and not is_white_player
         direction = self.get_direction(square)
@@ -468,6 +476,7 @@ class ChessBoard(board.Board):
         piece = piece.upper()
         if piece == self.PAWN:
             legal_moves.extend(self.get_pawn_legal_moves(square))
+            legal_moves.extend(self.get_en_passant_move(square))
         if piece == self.BISHOP:
             legal_moves.extend(self.get_bishop_legal_moves(square))
         if piece == self.KNIGHT:
@@ -483,7 +492,10 @@ class ChessBoard(board.Board):
         return legal_moves
 
     def move(self, from_square, to_square):
-        piece = self.get_piece(from_square)
+        piece = self.get_piece(from_square).upper()
+        color = self.get_player_from_square(from_square)
+        # print(f"{color} moves {piece} from {from_square} to {to_square}")
+        self.moves.extend([move.Move(color, piece, from_square, to_square)])
         if piece == self.KING:
             if self.get_player_from_square(from_square) == self.LIGHT_PLAYER:
                 self.has_white_king_moved = True
@@ -500,10 +512,36 @@ class ChessBoard(board.Board):
                     self.has_black_short_castle_rook_moved = True
                 if from_square == "a8":
                     self.has_black_long_castle_rook_moved = True
-
+        if piece == self.PAWN:
+            file, row = self.from_square(to_square)
+            # flag for letting the other player use en passant move
+            is_white_player = self.is_white_player(from_square)
+            if is_white_player and row == 4:
+                self.black_en_passant_target_file = file
+            if not is_white_player and row == 3:
+                self.white_en_passant_target_file = file
+            
+            # check if taking en passant
+            if is_white_player:
+                if row == 2: # row is indexed from 0, row 2 means 8-2-1 = 5th row (A5-H5)
+                    if self.white_en_passant_target_file is not None:
+                        distance = self.white_en_passant_target_file - file
+                        if distance == 0:
+                            # take en passant
+                            en_passant_square = self.get_file(self.white_en_passant_target_file) + str(5)
+                            self.configuration[en_passant_square] = None
+            else:
+                # print(f"black going from {from_square} to {to_square}")
+                if row == 5: # row is indexed from 0, row 5 means 8-5-1 = 2nd row (A2-H2)
+                    if self.black_en_passant_target_file is not None:
+                        distance = self.black_en_passant_target_file - file
+                        if distance == 0:
+                            # take en passant
+                            en_passant_square = self.get_file(self.black_en_passant_target_file) + str(4)
+                            self.configuration[en_passant_square] = None
         self.configuration[to_square] = self.configuration.get(from_square)
         self.configuration[from_square] = None
-
+    
     def _is_attacking_piece(self, attacking_player, attacked_square):
         return attacking_player != self.get_player_from_square(attacked_square)
 
@@ -557,26 +595,70 @@ class ChessBoard(board.Board):
                 return True
         return False
     
+    def is_next_file(self, file, target_file):
+        if target_file is None:
+            return False
+        diff1 = file - target_file
+        diff2 = target_file - file
+        is_next_file = (diff1 == 1) or (diff2 == 1)
+        return is_next_file
+
+    def get_en_passant_move(self, square):
+        en_passant_move = []
+        file, row = self.from_square(square)
+        if self.is_white_player(square):
+            # issue here, need to set black_en_passant_target_file when black moves
+            if row == 3 and self.is_next_file(file, self.white_en_passant_target_file):
+                en_passant_move.append(self.get_file(self.white_en_passant_target_file) + str(8 - row + 1))
+        else:
+            if row == 5 and self.is_next_file(file, self.white_en_passant_target_file):
+                en_passant_move.append(self.get_file(self.white_en_passant_target_file) + str(8 - row - 1))
+        return en_passant_move
+
     def __str__(self) -> str:
         return self.configuration
     
     def draw_simple(self):
         for line in range(self.rows):
             if line == 0:
-                print()
-                for column in range(self.columns):
-                    print(" _", end="")
-                print()
-            for column in range(self.columns):
-                row = self.get_row(line)
-                file = self.get_file(column)
-                square = file + row
+                self.draw_top_border()
+            self.draw_pieces(line)
+            self.draw_square_coordinates(line)
+            self.draw_bottom_border()
+    
+    def draw_top_border(self):
+        self.new_line()
+        for column in range(self.columns):
+            print(" __", end="")
+        self.new_line()
+    
+    def draw_pieces(self, line):
+        self.draw_cell(line, "pieces")
+    
+    def draw_square_coordinates(self, line):
+        self.draw_cell(line, "coordinates")
+    
+    def draw_cell(self, line, type):
+        for column in range(self.columns):
+            row = self.get_row(line)
+            file = self.get_file(column)
+            square = file + row
+            if type == "pieces":
                 if self.configuration.get(square) == None:
-                    square_content = " "
+                    square_content = "  "
                 else:
-                    square_content = self.configuration.get(square)
-                print(f"|{square_content}", end="")
-            print("|")
-            for column in range(self.columns):
-                print("|_", end="")
-            print("|")
+                    square_content = " " + self.configuration.get(square)
+            elif type == "coordinates":
+                square_content = square
+            else:
+                square_content = "  "
+            print(f"|{square_content}", end="")
+        print("|")
+
+    def draw_bottom_border(self):
+        for column in range(self.columns):
+            print("|__", end="")
+        print("|")
+    
+    def new_line(self):
+        print()
