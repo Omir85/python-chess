@@ -94,14 +94,14 @@ def start_game(window):
                             square_selected = None
                             board.switch_player()
                         else:
-                            # player selects another piece
                             if board.did_click_on_player_piece(square):
+                                # player selects one of his own pieces
                                 piece_selected = board.get_piece(square)
                                 square_selected = square
                                 legal_moves = board.get_legal_moves(piece_selected, square)
                                 from_square = square
                             else:
-                            # unselect if same piece clicked twice
+                                # unselect if player did not click on one of his own pieces
                                 legal_moves = []
                                 piece_selected = None
                                 square_selected = None
