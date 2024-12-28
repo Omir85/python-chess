@@ -121,10 +121,7 @@ def start_game(window):
         redraw_window()
 
 def should_take_fen_snapshot(event):
-    if event.type == pygame.KEYDOWN:
-        if event.key == pygame.K_p:
-            return True
-    return False
+    return event.type == pygame.KEYDOWN and event.key == pygame.K_p
 
 def take_fen_snapshot(board):
     return board.to_fen()
