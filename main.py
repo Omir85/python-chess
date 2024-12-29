@@ -83,10 +83,10 @@ def start_game(window):
                     else:
                         # the player did have a piece selected and now wants to move the piece somewhere else
                         if square in legal_moves:
-                            if current_player == board.LIGHT_PLAYER:
-                                board.white_en_passant_target_file = None
-                            else:
-                                board.black_en_passant_target_file = None
+                            # if current_player == board.LIGHT_PLAYER:
+                            #     board.white_en_passant_target_file = None
+                            # else:
+                            #     board.black_en_passant_target_file = None
                             board.move(from_square, square)
                             from_square = None
                             legal_moves = []
