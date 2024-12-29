@@ -530,27 +530,25 @@ class ChessBoard(board.Board):
         if not is_white_player and row == 3: # row is indexed from 0, row 4 means 8-4-1 = 3rd row (A3-H3)
             self.white_en_passant_target_file = file
         
-        print(f"white_en_passant_target_file is {self.white_en_passant_target_file}")
-        print(f"black_en_passant_target_file is {self.black_en_passant_target_file}")
+        # print(f"white_en_passant_target_file is {self.white_en_passant_target_file}")
+        # print(f"black_en_passant_target_file is {self.black_en_passant_target_file}")
         
         # check if taking en passant
         if is_white_player:
-            print(f"white going from {from_square} to {to_square} - row is {row} and file is {file}")
+            # print(f"white going from {from_square} to {to_square} - row is {row} and file is {file}")
             if row == 2: # row is indexed from 0, row 2 means 8-2-1 = 5th row (A5-H5)
-                if self.black_en_passant_target_file is not None:
-                    distance = self.black_en_passant_target_file - file
-                    print(f"distance is {distance}")
-                    if distance == 1:
-                        # take en passant
-                        en_passant_square = self.get_file(self.white_en_passant_target_file) + str(5)
-                        print(f"en_passant_square : {en_passant_square}")
-                        self.configuration[en_passant_square] = None
-        else:
-            print(f"black going from {from_square} to {to_square} - row is {row} and file is {file}")
-            if row == 5: # row is indexed from 0, row 5 means 8-5-1 = 2nd row (A2-H2)
                 if self.white_en_passant_target_file is not None:
                     distance = self.white_en_passant_target_file - file
-                    if distance == 1:
+                    if distance == 0:
+                        # take en passant
+                        en_passant_square = self.get_file(self.white_en_passant_target_file) + str(5)
+                        self.configuration[en_passant_square] = None
+        else:
+            # print(f"black going from {from_square} to {to_square} - row is {row} and file is {file}")
+            if row == 5: # row is indexed from 0, row 5 means 8-5-1 = 2nd row (A2-H2)
+                if self.black_en_passant_target_file is not None:
+                    distance = self.black_en_passant_target_file - file
+                    if distance == 0:
                         # take en passant
                         en_passant_square = self.get_file(self.black_en_passant_target_file) + str(4)
                         self.configuration[en_passant_square] = None
@@ -620,12 +618,11 @@ class ChessBoard(board.Board):
         en_passant_move = []
         file, row = self.from_square(square)
         if self.is_white_player(square):
-            # issue here, need to set black_en_passant_target_file when black moves
             if row == 3 and self.is_next_file(file, self.white_en_passant_target_file):
                 en_passant_move.append(self.get_file(self.white_en_passant_target_file) + str(8 - row + 1))
         else:
-            if row == 5 and self.is_next_file(file, self.white_en_passant_target_file):
-                en_passant_move.append(self.get_file(self.white_en_passant_target_file) + str(8 - row - 1))
+            if row == 4 and self.is_next_file(file, self.black_en_passant_target_file):
+                en_passant_move.append(self.get_file(self.black_en_passant_target_file) + str(8 - row - 1))
         return en_passant_move
 
     def __str__(self) -> str:

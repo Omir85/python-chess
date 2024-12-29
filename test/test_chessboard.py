@@ -456,6 +456,8 @@ class TestChessboard(unittest.TestCase):
         self.board.move("a2", "a4")
         assert self.board.get_piece("a2") is None
         assert self.board.get_piece("a4") is not None
+        legal_moves = self.board.get_legal_moves(self.board.PAWN, "b4")
+        assert "a3" in legal_moves
         self.board.move("b4", "a3")
         assert self.board.get_piece("a4") is None
 
@@ -468,18 +470,15 @@ class TestChessboard(unittest.TestCase):
         self.board.move("a4", "b3")
         assert self.board.get_piece("a3") is None
 
-    def test_take_en_passant_for_white_on_B_file_from_A_file(self):
+    def test_take_en_passant_for_white_on_B_file_from_A_file_2(self):
         fen = "rnbqkb1r/pppppppp/7n/2P5/8/8/PP1PPPPP/RNBQKBNR w KQkq - 0 1"
     # rnbqkb1r/p1pppppp/7n/1pP5/8/8/PP1PPPPP/RNBQKBNR w KQkq - 0 1
     # rnbqkb1r/p1pppppp/1P5n/1p6/8/8/PP1PPPPP/RNBQKBNR w KQkq - 0 1
         self.board = chessboard.ChessBoard(100, fen)
-        self.board.draw_simple()
         self.board.move("b7", "b5")
-        self.board.draw_simple()
         assert self.board.get_piece("b7") is None
         assert self.board.get_piece("b5") is not None
         self.board.move("c5", "b6")
-        self.board.draw_simple()
         assert self.board.get_piece("b5") is None
 
     def test_moves_is_empty_on_game_start(self):
@@ -499,7 +498,6 @@ class TestChessboard(unittest.TestCase):
         self.board = chessboard.ChessBoard(100)
         self.board.move("e2", "e4")
         self.board.move("e7", "e5")
-        # self.board.draw_simple()
         assert len(self.board.moves) == 2
         assert self.board.moves[1].color == self.board.DARK_PLAYER
         assert self.board.moves[1].piece == "P"
