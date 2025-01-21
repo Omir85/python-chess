@@ -24,6 +24,11 @@ python main.py
 Run the tests:
 python -m unittest test/test_chessboard.py
 
+GENERATE EXECUTABLE
+
+python -m pip install PyInstaller
+python -m PyInstaller --onefile --noconsole main.py
+
 PROJECT PHASES (* == Done):
 * Phase 1: Board is displayed with rows and files
 * Phase 2: Pieces are on the board

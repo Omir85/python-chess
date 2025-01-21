@@ -3,3 +3,8 @@ __pycache__
 .vscode
 *.next
 venv
+.pylintrc
+bugs.txt
+build/
+dist/
+main.spec
