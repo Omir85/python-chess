@@ -527,8 +527,8 @@ class TestChessboard(unittest.TestCase):
         fen = "4r3/8/8/8/8/8/4R3/4K3 w - - 0 1"
         self.board = chessboard.ChessBoard(100, fen)
         legal_moves = self.board.get_legal_moves(self.board.ROOK, "e2")
-        # The rook is pinned: it should have no legal moves that expose the king to check
-        assert len(legal_moves) == 0
+        # The rook is pinned: it should only be allowed to move along the e-file (to continue blocking)
+        assert all(mv.startswith('e') for mv in legal_moves)
 
     if __name__ == "__main__":
         pass
