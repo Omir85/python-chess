@@ -559,10 +559,16 @@ class ChessBoard(board.Board):
             legal_moves.extend(self.get_short_castle_move(square))
             legal_moves.extend(self.get_long_castle_move(square))
 
-        # Filter out moves that would leave own king in check (handle pins)
+        # Filter out moves that would leave the moving piece's own king in check (handle pins)
         if piece_upper != self.KING and len(legal_moves) > 0:
             filtered = []
-            other_player = self.get_other_player(self.current_player)
+            # determine the owner of the piece on `square` (could be different from current_player when
+            # get_legal_moves is called from routines inspecting opponent moves)
+            try:
+                piece_owner = self.get_player_from_square(square)
+            except Exception:
+                piece_owner = self.current_player
+            other_player = self.get_other_player(piece_owner)
             for mv in legal_moves:
                 # save state
                 saved_configuration = self.configuration.copy()
@@ -576,10 +582,10 @@ class ChessBoard(board.Board):
                     self.handle_pawn_move_logic(square, mv)
                 self.configuration[mv] = self.configuration.get(square)
                 self.configuration[square] = None
-                # find own king square
+                # find the king square belonging to the moving piece's owner
                 king_square = None
                 for sq, pc in self.configuration.items():
-                    if pc is not None and pc.lower() == 'k' and self.get_player_from_square(sq) == self.current_player:
+                    if pc is not None and pc.lower() == 'k' and self.get_player_from_square(sq) == piece_owner:
                         king_square = sq
                         break
                 attacked = False
