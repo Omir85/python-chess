@@ -514,7 +514,8 @@ class TestChessboard(unittest.TestCase):
 
     def test_pawn_promotion_black(self):
         # Black pawn moves to the 1st rank and should be promoted to a queen by default
-        fen = "8/8/8/8/8/8/8/p7 w KQkq - 0 1"
+        # place a black pawn on a2 (second rank from bottom)
+        fen = "8/8/8/8/8/8/p7/8 w KQkq - 0 1"
         self.board = chessboard.ChessBoard(100, fen)
         # Set current player to black so the pawn can move
         self.board.current_player = self.board.DARK_PLAYER
