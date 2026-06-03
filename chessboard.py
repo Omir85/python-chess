@@ -747,6 +747,46 @@ class ChessBoard(board.Board):
         """Check if 50 complete moves (100 half-moves) have passed without pawn move or capture."""
         return self.fifty_move_counter >= 100
 
+    def is_insufficient_material(self):
+        """Check if there is insufficient material on the board for checkmate."""
+        # Count material for each side (excluding kings)
+        white_pieces = []
+        black_pieces = []
+        for square, piece in self.configuration.items():
+            if piece is not None and piece.lower() != 'k':
+                if piece.isupper():
+                    white_pieces.append(piece.lower())
+                else:
+                    black_pieces.append(piece.lower())
+
+        # If either side has pawns or rooks or queens, there is sufficient material
+        for piece_list in [white_pieces, black_pieces]:
+            if 'p' in piece_list or 'r' in piece_list or 'q' in piece_list:
+                return False
+
+        # At this point, only knights and bishops remain (if any)
+        # King vs King is insufficient
+        if not white_pieces and not black_pieces:
+            return True
+
+        # King and one knight or one bishop vs King is insufficient
+        if (len(white_pieces) <= 1 and len(black_pieces) == 0) or \
+           (len(white_pieces) == 0 and len(black_pieces) <= 1):
+            return True
+
+        # King and one or more knights/bishops vs King and one or more knights/bishops
+        # simplified: if total material is only knights and bishops, insufficient
+        total_knights = white_pieces.count('n') + black_pieces.count('n')
+        total_bishops = white_pieces.count('b') + black_pieces.count('b')
+        total_pieces = len(white_pieces) + len(black_pieces)
+        if total_pieces > 0 and total_knights + total_bishops == total_pieces:
+            # Only knights and bishops remain; simplified check
+            # King + Knight(s)/Bishop(s) vs King is insufficient
+            if len(white_pieces) <= 1 or len(black_pieces) <= 1:
+                return True
+
+        return False
+
     def get_player_pieces(self, player) -> dict:
         player_pieces = {}
         for square, piece in self.configuration.items():
