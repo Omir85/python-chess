@@ -530,6 +530,39 @@ class TestChessboard(unittest.TestCase):
         # The rook is pinned: it should only be allowed to move along the e-file (to continue blocking)
         assert all(mv.startswith('e') for mv in legal_moves)
 
+    def test_threefold_repetition_detected(self):
+        # Create a simple position with a sequence that repeats 3 times
+        # Start with white moving b2-b3, black moves b7-b6, white moves b3-b2, black moves b6-b7
+        # This sequence repeats 3 times in total
+        self.board = chessboard.ChessBoard(100)
+        # Move 1: Wh b2-b3
+        self.board.move("b2", "b3")
+        self.board.switch_player()
+        # Move 2: Bk b7-b6
+        self.board.move("b7", "b6")
+        self.board.switch_player()
+        # Move 3: Wh b3-b2 (back to starting)
+        self.board.move("b3", "b2")
+        self.board.switch_player()
+        # Move 4: Bk b6-b7 (back to starting)
+        self.board.move("b6", "b7")
+        self.board.switch_player()
+        # Now we have seen this position 2 times, репeat once more:
+        # Move 5: Wh b2-b3
+        self.board.move("b2", "b3")
+        self.board.switch_player()
+        # Move 6: Bk b7-b6
+        self.board.move("b7", "b6")
+        self.board.switch_player()
+        # Move 7: Wh b3-b2
+        self.board.move("b3", "b2")
+        self.board.switch_player()
+        # Move 8: Bk b6-b7
+        self.board.move("b6", "b7")
+        self.board.switch_player()
+        # Now we have seen this position 3 times
+        assert self.board.is_threefold_repetition()
+
     if __name__ == "__main__":
         pass
 
