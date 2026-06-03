@@ -564,14 +564,13 @@ class TestChessboard(unittest.TestCase):
         assert self.board.is_threefold_repetition()
 
     def test_fifty_move_rule_detected(self):
-        # Create a position where we can make 50 moves without capturing or moving pawns
-        # This is a simplified version: we just track the counter and move pieces that don't capture
+        # Simple test: set counter to 99 and make one more non-pawn, non-capture move
         fen = "rnbqkb1r/pppppppp/5n2/8/8/5N2/PPPPPPPP/RNBQKB1R w KQkq - 0 1"
         self.board = chessboard.ChessBoard(100, fen)
-        # Manually set the fifty-move counter to a high value
-        self.board.fifty_move_counter = 99  # 99 half-moves means one more will trigger draw
-        # Make a non-pawn, non-capturing move to increment the counter
-        self.board.move("g1", "h3")  # Knight move, no capture
+        # Manually set the fifty-move counter to 99 half-moves
+        self.board.fifty_move_counter = 99
+        # Make a knight move (non-pawn, non-capture) to increment counter to 100
+        self.board.move("f3", "h4")  # White knight from f3 to h4, no capture
         assert self.board.is_fifty_move_draw()
 
     if __name__ == "__main__":
