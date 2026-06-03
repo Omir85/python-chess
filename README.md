@@ -62,10 +62,13 @@ Replay archived game
 RULES SECTION
 
 Overall rules
+- White moves first, then players alternate turns
+- A move is legal only if it does not leave or move the player's own king in check
 - Pieces and pawns can move except if it puts moving player's king in check (Pin)
 - Pieces take when moving
 - Pawns can only take on the 2 forward diagonal squares
 - The king is in check if it would be taken at the next turn
+- The king cannot be captured; when checkmate occurs, the game ends
 - The king is in checkmate when it is in check and it has no legal move
 - Stalemate is declared when on player's turn, player has no legal move with any piece
 
@@ -76,7 +79,10 @@ Move rules:
 - Bishop can move any number of squares in diagonal direction
 - Queen can move any number of squares in any direction
 - King can move 1 square in any direction as long as not in check after
+- Pawns can only move forward
 - Pawns when on starting row can move 2 squares forward, otherwise can move only 1 square forward
+- Pawn promotion: when a pawn reaches the opposite end of the board, it must be promoted to a Queen, Rook, Bishop, or Knight
+- En passant: when an opponent's pawn moves 2 squares forward from its starting position, a pawn on its 5th rank can capture it as if it had moved only 1 square forward (capture must be done immediately on the next move)
 
 Castling rules:
 - Apply only for the king
