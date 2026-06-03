@@ -70,6 +70,8 @@ class ChessBoard(board.Board):
         self.position_history = []  # list of position keys to detect draws
         self._record_position()  # record initial position
 
+        self.fifty_move_counter = 0  # half-move counter for fifty-move rule
+
     def _get_position_key(self):
         """Generate a unique key for the current board position (for repetition detection)."""
         fen = self.to_fen()
@@ -614,10 +616,13 @@ class ChessBoard(board.Board):
         return legal_moves
 
     def move(self, from_square, to_square):
+        # Track capture and pawn move for fifty-move rule
+        captured_piece = self.get_piece(to_square)
+        is_capture = captured_piece is not None
         # ...existing code...
         piece = self.get_piece(from_square).upper()
         color = self.get_player_from_square(from_square)
-        # ...existing code...
+        # ...existing code for move recording...
         self.moves.extend([move.Move(color, piece, from_square, to_square)])
         if piece == self.KING:
             if self.get_player_from_square(from_square) == self.LIGHT_PLAYER:
@@ -639,6 +644,12 @@ class ChessBoard(board.Board):
             self.handle_pawn_move_logic(from_square, to_square)
         self.configuration[to_square] = self.configuration.get(from_square)
         self.configuration[from_square] = None
+        # Update fifty-move counter: reset if pawn moved or piece captured, else increment
+        if piece == self.PAWN or is_capture:
+            self.fifty_move_counter = 0
+        else:
+            self.fifty_move_counter += 1
+
         # Pawn promotion: if a pawn reaches the far rank, promote to a Queen by default
         # ...existing code for promotion...
         if piece == self.PAWN:
@@ -731,6 +742,10 @@ class ChessBoard(board.Board):
         current_key = self._get_position_key()
         count = self.position_history.count(current_key)
         return count >= 3
+
+    def is_fifty_move_draw(self):
+        """Check if 50 complete moves (100 half-moves) have passed without pawn move or capture."""
+        return self.fifty_move_counter >= 100
 
     def get_player_pieces(self, player) -> dict:
         player_pieces = {}
