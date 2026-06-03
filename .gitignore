@@ -8,3 +8,4 @@ bugs.txt
 build/
 dist/
 main.spec
+.idea
