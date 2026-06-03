@@ -29,7 +29,7 @@ Pawn rules
 - * * Pawn double-step from starting rank is supported
 - * Pawns capture one square diagonally forward
 - * * En passant capture is implemented
--  Pawn promotion (when a pawn reaches the far rank, it must be promoted to Queen/Rook/Bishop/Knight)
+- * Pawn promotion (when a pawn reaches the far rank, it must be promoted to Queen/Rook/Bishop/Knight)
 
 Special rules
 
@@ -37,16 +37,16 @@ Special rules
 - * Check detection
 - * Checkmate detection
 - * Stalemate detection
--  Pin detection (restriction of moves because of pins) — not implemented
+- * Pin detection (restriction of moves because of pins)
 
 Draw rules
 
--  Threefold repetition — not implemented
--  Fifty-move rule — not implemented
--  Insufficient material — not implemented
+- * Threefold repetition
+- * Fifty-move rule
+- * Insufficient material
 
 Notes / references
 
+- All chess rules documented above have been implemented.
 - Implementation evidence found in `chessboard.py` and unit tests in `test/test_chessboard.py`.
-- Known bug: pawn promotion is not implemented (see `bugs.txt`).
 
