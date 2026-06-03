@@ -519,6 +519,19 @@ class ChessBoard(board.Board):
             self.handle_pawn_move_logic(from_square, to_square)
         self.configuration[to_square] = self.configuration.get(from_square)
         self.configuration[from_square] = None
+        # Pawn promotion: if a pawn reaches the far rank, promote to a Queen by default
+        if piece == self.PAWN:
+            try:
+                col, line = self.from_square(to_square)
+            except Exception:
+                col = None
+                line = None
+            # white pawn promotes on the top rank (line == 0), black pawn on bottom rank (line == 7)
+            if line is not None and self.configuration.get(to_square) is not None:
+                if self.is_white_player(to_square) and line == 0:
+                    self.configuration[to_square] = self.QUEEN
+                if not self.is_white_player(to_square) and line == 7:
+                    self.configuration[to_square] = self.QUEEN.lower()
         # self.draw_simple()
     
     def handle_pawn_move_logic(self, from_square, to_square):
