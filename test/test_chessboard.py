@@ -504,6 +504,23 @@ class TestChessboard(unittest.TestCase):
         assert self.board.moves[1].origin == "e7"
         assert self.board.moves[1].destination == "e5"
 
+    def test_pawn_promotion_white(self):
+        # White pawn moves to the 8th rank and should be promoted to a Queen by default
+        fen = "8/6P1/8/8/8/8/8/8 w KQkq - 0 1"
+        self.board = chessboard.ChessBoard(100, fen)
+        # move white pawn from g7 to g8
+        self.board.move("g7", "g8")
+        assert self.board.get_piece("g8") == "Q"
+
+    def test_pawn_promotion_black(self):
+        # Black pawn moves to the 1st rank and should be promoted to a queen by default
+        fen = "8/8/8/8/8/8/8/p7 w KQkq - 0 1"
+        self.board = chessboard.ChessBoard(100, fen)
+        # Set current player to black so the pawn can move
+        self.board.current_player = self.board.DARK_PLAYER
+        self.board.move("a2", "a1")
+        assert self.board.get_piece("a1") == "q"
+
     if __name__ == "__main__":
         pass
 
