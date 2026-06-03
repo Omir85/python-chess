@@ -328,7 +328,74 @@ class ChessBoard(board.Board):
     
     def is_attacked(self, square:str) -> bool:
         return len(self.get_attackers(square)) > 0
-    
+
+    def is_square_attacked_by_player(self, square: str, attacking_player) -> bool:
+        """
+        Check if `square` is attacked by any piece of `attacking_player` without using
+        get_legal_moves (to avoid recursion). Uses raw piece movement rules.
+        """
+        col, line = self.from_square(square)
+        # Knight attacks
+        knight_offsets = [(2,1),(1,2),(-1,2),(-2,1),(-2,-1),(-1,-2),(1,-2),(2,-1)]
+        for dx, dy in knight_offsets:
+            c = col + dx
+            r = line + dy
+            if 0 <= c < 8 and 0 <= r < 8:
+                sq = self.get_file(c) + self.get_row(r)
+                p = self.configuration.get(sq)
+                if p is not None and self.get_player_from_square(sq) == attacking_player and p.lower() == 'n':
+                    return True
+
+        # Pawn attacks
+        # white pawns attack with dy = -1, black pawns with dy = 1 (in board coordinates)
+        pawn_dy = -1 if attacking_player == self.LIGHT_PLAYER else 1
+        for dx in (-1, 1):
+            c = col + dx
+            r = line + pawn_dy
+            if 0 <= c < 8 and 0 <= r < 8:
+                sq = self.get_file(c) + self.get_row(r)
+                p = self.configuration.get(sq)
+                if p is not None and self.get_player_from_square(sq) == attacking_player and p.lower() == 'p':
+                    return True
+
+        # King adjacency
+        for dx in (-1, 0, 1):
+            for dy in (-1, 0, 1):
+                if dx == 0 and dy == 0:
+                    continue
+                c = col + dx
+                r = line + dy
+                if 0 <= c < 8 and 0 <= r < 8:
+                    sq = self.get_file(c) + self.get_row(r)
+                    p = self.configuration.get(sq)
+                    if p is not None and self.get_player_from_square(sq) == attacking_player and p.lower() == 'k':
+                        return True
+
+        # Sliding pieces: rook, bishop, queen
+        directions = [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)]
+        for dx, dy in directions:
+            c = col + dx
+            r = line + dy
+            while 0 <= c < 8 and 0 <= r < 8:
+                sq = self.get_file(c) + self.get_row(r)
+                p = self.configuration.get(sq)
+                if p is not None:
+                    if self.get_player_from_square(sq) == attacking_player:
+                        pt = p.lower()
+                        if dx == 0 or dy == 0:
+                            # orthogonal direction -> rook or queen
+                            if pt == 'r' or pt == 'q':
+                                return True
+                        if abs(dx) == abs(dy):
+                            # diagonal -> bishop or queen
+                            if pt == 'b' or pt == 'q':
+                                return True
+                    break
+                c += dx
+                r += dy
+
+        return False
+
     def get_king_legal_moves(self, king_square:str):
         moves = []
         moves.extend(self.get_squares_ahead(king_square, -1, 1, limit=1))
@@ -475,22 +542,58 @@ class ChessBoard(board.Board):
     
     def get_legal_moves(self, piece:str, square):
         legal_moves = []
-        piece = piece.upper()
-        if piece == self.PAWN:
+        piece_upper = piece.upper()
+        if piece_upper == self.PAWN:
             legal_moves.extend(self.get_pawn_legal_moves(square))
             legal_moves.extend(self.get_en_passant_move(square))
-        if piece == self.BISHOP:
+        if piece_upper == self.BISHOP:
             legal_moves.extend(self.get_bishop_legal_moves(square))
-        if piece == self.KNIGHT:
+        if piece_upper == self.KNIGHT:
             legal_moves.extend(self.get_knight_legal_moves(square))
-        if piece == self.ROOK:
+        if piece_upper == self.ROOK:
             legal_moves.extend(self.get_rook_legal_moves(square))
-        if piece == self.QUEEN:
+        if piece_upper == self.QUEEN:
             legal_moves.extend(self.get_queen_legal_moves(square))
-        if piece == self.KING:
+        if piece_upper == self.KING:
             legal_moves.extend(self.get_king_legal_moves(square))
             legal_moves.extend(self.get_short_castle_move(square))
             legal_moves.extend(self.get_long_castle_move(square))
+
+        # Filter out moves that would leave own king in check (handle pins)
+        if piece_upper != self.KING and len(legal_moves) > 0:
+            filtered = []
+            other_player = self.get_other_player(self.current_player)
+            for mv in legal_moves:
+                # save state
+                saved_configuration = self.configuration.copy()
+                saved_white_ept = self.white_en_passant_target_file
+                saved_black_ept = self.black_en_passant_target_file
+                saved_white_ep_pawn = self.white_en_passant_pawn
+                saved_black_ep_pawn = self.black_en_passant_pawn
+                # simulate the move
+                if piece_upper == self.PAWN:
+                    # handle en passant capture in simulation
+                    self.handle_pawn_move_logic(square, mv)
+                self.configuration[mv] = self.configuration.get(square)
+                self.configuration[square] = None
+                # find own king square
+                king_square = None
+                for sq, pc in self.configuration.items():
+                    if pc is not None and pc.lower() == 'k' and self.get_player_from_square(sq) == self.current_player:
+                        king_square = sq
+                        break
+                attacked = False
+                if king_square is not None:
+                    attacked = self.is_square_attacked_by_player(king_square, other_player)
+                # revert state
+                self.configuration = saved_configuration
+                self.white_en_passant_target_file = saved_white_ept
+                self.black_en_passant_target_file = saved_black_ept
+                self.white_en_passant_pawn = saved_white_ep_pawn
+                self.black_en_passant_pawn = saved_black_ep_pawn
+                if not attacked:
+                    filtered.append(mv)
+            legal_moves = filtered
         return legal_moves
 
     def move(self, from_square, to_square):
