@@ -6,6 +6,8 @@ Prefix legend:
 - `+` being implemented / partially implemented
 - (no prefix) not implemented at all
 
+Phase 1
+
 Overall rules
 
 - * White moves first (turn order enforced)
@@ -49,4 +51,47 @@ Notes / references
 
 - All chess rules documented above have been implemented.
 - Implementation evidence found in `chessboard.py` and unit tests in `test/test_chessboard.py`.
+
+Phase 2
+
+Now that the base game rules are implemented, we can add features to enhance the user experience and make the game more enjoyable.
+
+- Players can resign
+- Players can offer a draw
+- When a player offers a draw, the opponent can accept or decline the offer
+- If the draw offer is accepted, the game ends in a draw
+- If the draw offer is declined, the player cannot ask again this turn, but can ask again in future turns
+- If the draw offer is declined, the game continues as normal
+- Display a window when the game ends for any reason (checkmate, stalemate, draw, resignation)
+- Display a checkmate message when checkmate occurs
+- Display a stalemate message when stalemate occurs
+- Display a draw message when a draw occurs
+- Display a resignation message when a player resigns
+- Move history (displaying past moves)
+- Undo functionality (allowing players to take back moves)
+- Arrows (visual indicators for moves)
+- Color checked king (highlighting the king in check)
+- Color checkmated king (highlighting the king in checkmate)
+- Area for taken pieces (displaying captured pieces)
+- Save game (allowing players to save their current game state)
+- Restore game (allowing players to load a saved game state)
+- Archive game (allowing players to archive completed games)
+- Replay archived game (allowing players to replay archived games)
+- Play game from FEN
+
+Phase 3
+
+Now that we have a working game playable by humans, we can add an AI opponent to allow for single-player mode.
+
+- Implement a basic AI opponent (e.g., random move selection)
+- Allow players to choose to play against the AI
+- Allow the AI player to resign or to offer a draw
+
+Phase 4
+
+We're getting in the interesting part, where the AI will play against itself and learn from it. This will involve implementing a more sophisticated AI algorithm (e.g., Minimax with alpha-beta pruning) and allowing the AI to play games against itself to improve its decision-making over time.
+
+- Allow 2 AIs to play against each other (for testing and demonstration purposes)
+- Make sure the AI never resigns when self-playing
+- Implement a system where AI will learn from self-play (e.g., using reinforcement learning techniques)
 
