@@ -522,6 +522,14 @@ class TestChessboard(unittest.TestCase):
         self.board.move("a2", "a1")
         assert self.board.get_piece("a1") == "q"
 
+    def test_pin_prevents_illegal_moves(self):
+        # Black rook on e8 pins white rook on e2 to the white king on e1
+        fen = "4r3/8/8/8/8/8/4R3/4K3 w - - 0 1"
+        self.board = chessboard.ChessBoard(100, fen)
+        legal_moves = self.board.get_legal_moves(self.board.ROOK, "e2")
+        # The rook is pinned: it should have no legal moves that expose the king to check
+        assert len(legal_moves) == 0
+
     if __name__ == "__main__":
         pass
 
