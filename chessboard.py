@@ -67,6 +67,17 @@ class ChessBoard(board.Board):
         self.black_en_passant_pawn = None
 
         self.moves = []
+        self.position_history = []  # list of position keys to detect draws
+        self._record_position()  # record initial position
+
+    def _get_position_key(self):
+        """Generate a unique key for the current board position (for repetition detection)."""
+        fen = self.to_fen()
+        return fen
+
+    def _record_position(self):
+        """Record the current board position in the history."""
+        self.position_history.append(self._get_position_key())
 
     def get_default_fen_end(self):
         return self.__DEFAULT_FEN_END
@@ -603,10 +614,10 @@ class ChessBoard(board.Board):
         return legal_moves
 
     def move(self, from_square, to_square):
-        # self.draw_simple()
+        # ...existing code...
         piece = self.get_piece(from_square).upper()
         color = self.get_player_from_square(from_square)
-        # print(f"{color} moves {piece} from {from_square} to {to_square}")
+        # ...existing code...
         self.moves.extend([move.Move(color, piece, from_square, to_square)])
         if piece == self.KING:
             if self.get_player_from_square(from_square) == self.LIGHT_PLAYER:
@@ -629,18 +640,21 @@ class ChessBoard(board.Board):
         self.configuration[to_square] = self.configuration.get(from_square)
         self.configuration[from_square] = None
         # Pawn promotion: if a pawn reaches the far rank, promote to a Queen by default
+        # ...existing code for promotion...
         if piece == self.PAWN:
             try:
                 col, line = self.from_square(to_square)
             except Exception:
                 col = None
                 line = None
-            # white pawn promotes on the top rank (line == 0), black pawn on bottom rank (line == 7)
+            # ...existing code...
             if line is not None and self.configuration.get(to_square) is not None:
                 if self.is_white_player(to_square) and line == 0:
                     self.configuration[to_square] = self.QUEEN
                 if not self.is_white_player(to_square) and line == 7:
                     self.configuration[to_square] = self.QUEEN.lower()
+        # Record the position after move for repetition/draw detection
+        self._record_position()
         # self.draw_simple()
     
     def handle_pawn_move_logic(self, from_square, to_square):
@@ -701,6 +715,7 @@ class ChessBoard(board.Board):
         self.current_player = self.LIGHT_PLAYER if self.current_player == self.DARK_PLAYER else self.DARK_PLAYER
     
     def is_stalemated(self, player):
+        # ...existing code...
         for square in self.configuration.keys():
             piece = self.configuration.get(square)
             if piece is not None and piece.lower() == "k":
@@ -710,7 +725,13 @@ class ChessBoard(board.Board):
                     king_square = square
         king = self.get_piece(king_square)
         return not self.can_player_move_any_piece_except_king(player) and not self.is_in_check(king_square) and len(self.get_legal_moves(king, king_square)) == 0
-    
+
+    def is_threefold_repetition(self):
+        """Check if the current position has occurred 3 or more times in game history."""
+        current_key = self._get_position_key()
+        count = self.position_history.count(current_key)
+        return count >= 3
+
     def get_player_pieces(self, player) -> dict:
         player_pieces = {}
         for square, piece in self.configuration.items():
