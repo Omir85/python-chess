@@ -573,6 +573,36 @@ class TestChessboard(unittest.TestCase):
         self.board.move("f3", "h4")  # White knight from f3 to h4, no capture
         assert self.board.is_fifty_move_draw()
 
+    def test_insufficient_material_king_vs_king(self):
+        # King vs King is insufficient material for checkmate
+        fen = "4k3/8/8/8/8/8/8/4K3 w - - 0 1"
+        self.board = chessboard.ChessBoard(100, fen)
+        assert self.board.is_insufficient_material()
+
+    def test_insufficient_material_king_knight_vs_king(self):
+        # King and Knight vs King is insufficient material
+        fen = "4k3/8/8/8/8/8/8/4KN2 w - - 0 1"
+        self.board = chessboard.ChessBoard(100, fen)
+        assert self.board.is_insufficient_material()
+
+    def test_insufficient_material_king_bishop_vs_king(self):
+        # King and Bishop vs King is insufficient material
+        fen = "4k3/8/8/8/8/8/8/4KB2 w - - 0 1"
+        self.board = chessboard.ChessBoard(100, fen)
+        assert self.board.is_insufficient_material()
+
+    def test_sufficient_material_with_pawns(self):
+        # King and Pawn is sufficient material (can promote)
+        fen = "4k3/8/8/8/8/8/P7/4K3 w - - 0 1"
+        self.board = chessboard.ChessBoard(100, fen)
+        assert not self.board.is_insufficient_material()
+
+    def test_sufficient_material_with_rooks(self):
+        # Rooks are sufficient material for checkmate
+        fen = "4k3/8/8/8/8/8/8/4KR2 w - - 0 1"
+        self.board = chessboard.ChessBoard(100, fen)
+        assert not self.board.is_insufficient_material()
+
     if __name__ == "__main__":
         pass
 
