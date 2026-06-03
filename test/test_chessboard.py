@@ -603,6 +603,35 @@ class TestChessboard(unittest.TestCase):
         self.board = chessboard.ChessBoard(100, fen)
         assert not self.board.is_insufficient_material()
 
+    def test_bug_en_passant_move_available(self):
+        # Bug 1: When in position of en passant, no en passant move is allowed
+        # Create a position where black pawn moves 2 squares and white pawn can capture en passant
+        fen = "8/pppppppp/8/P7/8/8/8/8 w KQkq - 0 1"
+        self.board = chessboard.ChessBoard(100, fen)
+        # Black pawn moves 2 squares from b7 to b5
+        self.board.move("b7", "b5")
+        self.board.switch_player()
+        # White pawn should be able to capture en passant from a5 to b6
+        legal_moves = self.board.get_legal_moves(self.board.PAWN, "a5")
+        assert "b6" in legal_moves, f"En passant capture not available. Legal moves: {legal_moves}"
+
+    def test_bug_pawn_at_row_6_white(self):
+        # Bug 2: When pawn moves to row 6 for white or row 3 for black, it disappears
+        # White pawn should not disappear when moving to row 6
+        fen = "8/8/8/8/8/8/1P6/8 w KQkq - 0 1"
+        self.board = chessboard.ChessBoard(100, fen)
+        self.board.move("b2", "b6")  # Move pawn to row 6
+        assert self.board.get_piece("b6") == "P", "White pawn disappeared at row 6!"
+
+    def test_bug_pawn_at_row_3_black(self):
+        # Bug 2: When pawn moves to row 6 for white or row 3 for black, it disappears
+        # Black pawn should not disappear when moving to row 3
+        fen = "8/1p6/8/8/8/8/8/8 b KQkq - 0 1"
+        self.board = chessboard.ChessBoard(100, fen)
+        self.board.current_player = self.board.DARK_PLAYER
+        self.board.move("b7", "b3")  # Move pawn to row 3
+        assert self.board.get_piece("b3") == "p", "Black pawn disappeared at row 3!"
+
     if __name__ == "__main__":
         pass
 
