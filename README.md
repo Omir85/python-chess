@@ -29,73 +29,49 @@ GENERATE EXECUTABLE
 python -m pip install PyInstaller
 python -m PyInstaller --onefile --noconsole main.py
 
-PROJECT PHASES (* == Done):
-* Phase 1: Board is displayed with rows and files
-* Phase 2: Pieces are on the board
-* Phase 2.5: Implement chess notation to quickload a board
-* Phase 3: Pieces can move
-* Phase 3.5: Castling (short and long)
-* Phase 4: Pieces can take
-Phase 5: Check
-* Phase 5.0: Simple check condition
-Phase 5.1: Block - restrict movement of checked player pieces to only squares in the path of the checking piece. If 2 pieces are checking, checked king must move out of check.
-Phase 5.2: Pin
-* Phase 6: Stalemate
-* Phase 7: Checkmate
-Phase 8: Promotion
-Phase 9: En passant
-Phase 10: Implement time
-Phase 11: Draw
+PROJECT PHASES & FEATURE BACKLOG
 
-Other ideas of TODO
-Move history
-Undo
-Arrows
-Color checked king
-Color checkmated king
-Area for taken pieces
-Save game
-Restore game
-Archive game
-Replay archived game
+See `BACKLOG.md` for the full project phases, implementation status, and planned features. This repository's detailed backlog (done, in-progress, and planned items) is maintained in that file to avoid duplication.
 
-RULES SECTION
+RULES OF CHESS
 
-Overall rules
-- White moves first, then players alternate turns
-- A move is legal only if it does not leave or move the player's own king in check
-- Pieces and pawns can move except if it puts moving player's king in check (Pin)
-- Pieces take when moving
-- Pawns can only take on the 2 forward diagonal squares
-- The king is in check if it would be taken at the next turn
-- The king cannot be captured; when checkmate occurs, the game ends
-- The king is in checkmate when it is in check and it has no legal move
-- Stalemate is declared when on player's turn, player has no legal move with any piece
+This section summarizes the official rules of chess as implemented or intended for this project. It is written to be complete and unambiguous for game logic purposes.
 
-Move rules:
-- Rook can move any number of squares in linear direction (rows and files)
-- Knight can move 2x1 or 1x2
-- Knight can jump over pieces
-- Bishop can move any number of squares in diagonal direction
-- Queen can move any number of squares in any direction
-- King can move 1 square in any direction as long as not in check after
-- Pawns can only move forward
-- Pawns when on starting row can move 2 squares forward, otherwise can move only 1 square forward
-- Pawn promotion: when a pawn reaches the opposite end of the board, it must be promoted to a Queen, Rook, Bishop, or Knight
-- En passant: when an opponent's pawn moves 2 squares forward from its starting position, a pawn on its 5th rank can capture it as if it had moved only 1 square forward (capture must be done immediately on the next move)
+1) Game basics
+- Two players: White and Black. White moves first, then players alternate turns.
+- Objective: checkmate the opponent's king (put the king under attack with no legal move to escape). A draw result is possible by the rules below.
 
-Castling rules:
-- Apply only for the king
-- If no piece between the king and any of the rooks, the king can move 2 squares in the direction of the rook, and the rook will move towards the center next to the king
-- King must not have already moved
-- Castling rook must not have already moved
-- Castling cannot be performed if any of the squares between the rook and the king are under attack (cannot castle through a check)
+2) Legal and illegal moves
+- A move is legal only if it conforms to the movement rules of the piece and does not leave or place the player's own king in check.
+- Players may not make a move that results in their own king being in check. Illegal moves are not allowed.
 
-Draw rules:
-- Repeat moves 3 times
-- Only the kings remain on the board
--- Extension: Insufficient material
-- No piece captured and no pawn advanced after 50 moves
+3) Piece movement and capture
+- King: moves one square in any direction. The king cannot move into check.
+- Queen: moves any number of squares along rank, file, or diagonal, until blocked by another piece. Captures by landing on an occupied enemy square.
+- Rook: moves any number of squares along rank or file. Captures like the queen.
+- Bishop: moves any number of squares diagonally.
+- Knight: moves in an 'L' shape (two squares in one direction and then one perpendicular). Knights may jump over pieces.
+- Pawn: moves forward one square. On its first move a pawn may move two squares forward if both squares are unoccupied. Pawns capture one square diagonally forward. Pawns cannot move or capture backward.
 
-Unspoken rule:
-- Kings cannot touch
+4) Special pawn rules
+- En passant: If a pawn moves two squares from its starting rank and lands adjacent to an opponent pawn, that opponent pawn may capture it en passant on its immediately following move as if the pawn had moved only one square. The capturing pawn moves to the square the pawn passed over and the moved pawn is removed.
+- Promotion: When a pawn reaches the opponent's back rank (rank 8 for White, rank 1 for Black) it is promoted immediately to a queen, rook, bishop, or knight of the same color. In this project default promotion is to a queen; a promotion choice UI may be added later.
+
+5) Castling
+- Castling is a joint king+rook move performed as follows: the king moves two squares toward a rook on the player's first rank, and that rook moves to the square the king passed over (ending adjacent to the king).
+- Conditions for castling to be legal:
+  - Neither the king nor the rook involved have previously moved.
+  - There are no pieces between the king and the rook.
+  - The king is not currently in check.
+  - The squares that the king passes over, and the destination square, are not under attack by any enemy piece (the king may not castle through or into check).
+
+6) Check, checkmate, and stalemate
+- Check: a king is in check if it is under attack by one or more enemy pieces. Players must respond to check by making a move that removes the check on their turn.
+- Checkmate: the king is in check and the side to move has no legal move to remove the check. The game ends with a win for the attacker.
+- Stalemate: the side to move is not in check but has no legal move. The game is a draw.
+
+7) Draw conditions
+- Threefold repetition: If the same board position occurs three times with the same player to move and same rights (castling, en passant), a player may claim a draw.
+- Fifty-move rule: If fifty consecutive full moves (i.e., 50 moves by each side, or 100 plies) occur without any pawn move or capture, a player may claim a draw. (Some sources use 50 half-moves; implement according to chosen convention — backlog notes track this.)
+- Insufficient material: The game is a draw if checkmate is impossible with the material on the board (e.g., king vs. king, king and bishop vs. king, king and knight vs. king; specific exceptions apply for some combinations).
+- Agreement: players may agree to a draw at any time.
