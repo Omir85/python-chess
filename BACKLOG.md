@@ -100,7 +100,7 @@ Legend:
 - Highlight checked king
 - Highlight checkmated king
 - Captured pieces display area
-- Game end window (checkmate/stalemate/draw/resignation)
+- Game over window (checkmate/stalemate/draw/resignation)
 
 ### Phase 13: Game Persistence
 - Save game to file
